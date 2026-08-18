@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Portal | Barbershop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkblue: '#0f172a',
+                        primary: '#1e3a8a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hidden-view { display: none !important; }
+        .tv-mode { display: flex; flex-direction: column; height: 100vh; background: #0f172a; color: white; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased h-screen overflow-hidden flex">
+
+    <!-- Login View -->
+    <div id="view-login" class="hidden-view absolute inset-0 z-50 bg-gray-100 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+            <div class="text-center mb-6">
+                <i class="fas fa-cut text-4xl text-darkblue mb-2"></i>
+                <h2 class="text-2xl font-bold text-darkblue">Admin Portal</h2>
+            </div>
+            <form id="login-form" onsubmit="adminApp.login(event)">
+                <input type="email" id="login-email" required placeholder="Email" class="w-full p-3 mb-4 border rounded focus:ring-2 outline-none">
+                <input type="password" id="login-pwd" required placeholder="Password" class="w-full p-3 mb-6 border rounded focus:ring-2 outline-none">
+                <p id="login-err" class="text-red-500 text-sm mb-4 hidden"></p>
+                <button type="submit" class="w-full bg-darkblue text-white font-bold py-3 rounded shadow hover:bg-primary">LOGIN</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TV Display View (Public, No Login) -->
+    <div id="view-tv" class="hidden-view absolute inset-0 z-50 tv-mode p-8">
+        <h1 class="text-5xl font-bold tracking-widest mb-12 opacity-80" id="tv-shopname">BARBERSHOP</h1>
+        <div class="grid grid-cols-2 gap-12 w-full max-w-6xl">
+            <div class="bg-primary bg-opacity-20 p-12 rounded-3xl border border-primary text-center">
+                <h2 class="text-3xl font-semibold text-blue-300 uppercase mb-4">Now Serving</h2>
+                <div class="text-9xl font-black text-white" id="tv-serving">--</div>
+            </div>
+            <div class="bg-white bg-opacity-5 p-12 rounded-3xl text-center">
+                <h2 class="text-3xl font-semibold text-gray-400 uppercase mb-4">Next</h2>
+                <div class="text-8xl font-bold text-gray-200 mb-6" id="tv-next-1">--</div>
+                <div class="text-5xl font-medium text-gray-500 space-x-6">
+                    <span id="tv-next-2"></span> <span id="tv-next-3"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-darkblue text-white flex flex-col hidden-view">
+        <div class="p-6 text-center border-b border-gray-700">
+            <h1 class="text-2xl font-bold tracking-wider"><i class="fas fa-cut mr-2"></i> ADMIN</h1>
+        </div>
+        <nav class="flex-grow p-4 space-y-2">
+            <a href="#dashboard" class="nav-link block p-3 rounded hover:bg-primary" data-target="dashboard"><i class="fas fa-chart-line w-6"></i> Dashboard</a>
+            <a href="#queue" class="nav-link block p-3 rounded hover:bg-primary" data-target="queue"><i class="fas fa-users w-6"></i> Queue</a>
+            <a href="#bookings" class="nav-link block p-3 rounded hover:bg-primary" data-target="bookings"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
+            <a href="#settings" class="nav-link block p-3 rounded hover:bg-primary" data-target="settings"><i class="fas fa-cog w-6"></i> Settings</a>
+            <a href="#tv" target="_blank" class="block p-3 rounded hover:bg-primary mt-8 text-gray-400"><i class="fas fa-tv w-6"></i> Open TV Display</a>
+        </nav>
+        <div class="p-4 border-t border-gray-700">
+            <button onclick="adminApp.logout()" class="w-full p-2 bg-red-600 hover:bg-red-700 rounded text-sm font-bold"><i class="fas fa-sign-out-alt mr-2"></i> LOGOUT</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-grow flex flex-col overflow-hidden hidden-view bg-gray-100">
+        <header class="bg-white shadow p-4 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-darkblue" id="header-title">Dashboard</h2>
+            <div class="text-sm font-semibold text-gray-500" id="current-date"></div>
+        </header>
+
+        <div class="p-6 overflow-y-auto flex-grow" id="content-area">
+            
+            <!-- Dashboard -->
+            <section id="sec-dashboard" class="hidden-view">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                        <p class="text-gray-500 text-sm font-bold uppercase">Waiting in Queue</p>
+                        <p class="text-3xl font-black text-darkblue mt-2" id="dash-waiting">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                        <p class="text-gray-500 text-sm font-bold uppercase">Completed Today</p>
+                        <p class="text-3xl font-black text-darkblue mt-2" id="dash-completed">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
+                        <p class="text-gray-500 text-sm font-bold uppercase">Bookings Today</p>
+                        <p class="text-3xl font-black text-darkblue mt-2" id="dash-bookings">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500">
+                        <p class="text-gray-500 text-sm font-bold uppercase">Now Serving</p>
+                        <p class="text-3xl font-black text-darkblue mt-2" id="dash-serving">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Queue Management -->
+            <section id="sec-queue" class="hidden-view flex gap-6">
+                <div class="w-1/3 bg-white rounded-lg shadow flex flex-col h-[calc(100vh-140px)]">
+                    <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-700">Waiting</h3>
+                    </div>
+                    <div class="p-2 overflow-y-auto flex-grow space-y-2" id="q-waiting-list"></div>
+                </div>
+                
+                <div class="w-1/3 bg-white rounded-lg shadow flex flex-col h-[calc(100vh-140px)]">
+                    <div class="p-4 border-b bg-blue-50 flex justify-between items-center">
+                        <h3 class="font-bold text-blue-800">Called (Next)</h3>
+                    </div>
+                    <div class="p-2 overflow-y-auto flex-grow space-y-2" id="q-called-list"></div>
+                </div>
+
+                <div class="w-1/3 bg-white rounded-lg shadow flex flex-col h-[calc(100vh-140px)]">
+                    <div class="p-4 border-b bg-green-50 flex justify-between items-center">
+                        <h3 class="font-bold text-green-800">Serving</h3>
+                    </div>
+                    <div class="p-2 overflow-y-auto flex-grow space-y-2" id="q-serving-list"></div>
+                </div>
+            </section>
+
+            <!-- Bookings -->
+            <section id="sec-bookings" class="hidden-view">
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="p-4 border-b flex justify-between">
+                        <input type="date" id="book-date-filter" class="border p-2 rounded text-sm" onchange="adminApp.loadBookings()">
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm uppercase">
+                                <th class="p-3 border-b">ID / Time</th>
+                                <th class="p-3 border-b">Customer</th>
+                                <th class="p-3 border-b">Service / Barber</th>
+                                <th class="p-3 border-b">Status</th>
+                                <th class="p-3 border-b text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section id="sec-settings" class="hidden-view max-w-2xl bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-bold mb-4">Business Settings</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-bold text-gray-700">Shop Name</label><input type="text" id="set-name" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label class="block text-sm font-bold text-gray-700">Queue Prefix</label><input type="text" id="set-prefix" class="w-full border p-2 rounded mt-1"></div>
+                    <div><label class="block text-sm font-bold text-gray-700">Avg Service Duration (mins)</label><input type="number" id="set-duration" class="w-full border p-2 rounded mt-1"></div>
+                    <button onclick="adminApp.saveSettings()" class="bg-darkblue text-white px-4 py-2 rounded font-bold hover:bg-primary">Save Settings</button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        // ================================
+        // FIREBASE CONFIGURATION
+        // Replace these values
+        // ================================
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, updateDoc, setDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const appFirebase = initializeApp(firebaseConfig);
+        const db = getFirestore(appFirebase);
+        const auth = getAuth(appFirebase);
+
+        const AdminApp = {
+            unsubQueue: null,
+            unsubBook: null,
+            queues: [],
+            
+            init() {
+                document.getElementById('current-date').innerText = new Date().toDateString();
+                
+                // Handle Routing (Hash)
+                window.addEventListener('hashchange', () => this.handleRoute());
+                
+                // Auth Listener
+                onAuthStateChanged(auth, user => {
+                    if (window.location.hash === '#tv') {
+                        this.initTV();
+                        return;
+                    }
+                    if (user) {
+                        document.getElementById('view-login').classList.add('hidden-view');
+                        document.getElementById('sidebar').classList.remove('hidden-view');
+                        document.getElementById('main-content').classList.remove('hidden-view');
+                        if(!window.location.hash || window.location.hash === '#login') window.location.hash = '#dashboard';
+                        this.handleRoute();
+                        this.startListeners();
+                    } else {
+                        document.getElementById('view-login').classList.remove('hidden-view');
+                        document.getElementById('sidebar').classList.add('hidden-view');
+                        document.getElementById('main-content').classList.add('hidden-view');
+                    }
+                });
+
+                if(window.location.hash === '#tv') this.initTV();
+            },
+
+            async login(e) {
+                e.preventDefault();
+                const err = document.getElementById('login-err');
+                err.classList.add('hidden');
+                try {
+                    await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pwd').value);
+                } catch(error) {
+                    err.innerText = error.message;
+                    err.classList.remove('hidden');
+                }
+            },
+            
+            logout() { signOut(auth); },
+
+            handleRoute() {
+                const hash = window.location.hash.substring(1) || 'dashboard';
+                if(hash === 'login' || hash === 'tv') return;
+                
+                document.querySelectorAll('main section').forEach(el => el.classList.add('hidden-view'));
+                const sec = document.getElementById(`sec-${hash}`);
+                if(sec) sec.classList.remove('hidden-view');
+                
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('bg-primary'));
+                const activeLink = document.querySelector(`.nav-link[data-target="${hash}"]`);
+                if(activeLink) activeLink.classList.add('bg-primary');
+                
+                document.getElementById('header-title').innerText = hash.charAt(0).toUpperCase() + hash.slice(1);
+
+                if (hash === 'bookings') {
+                    document.getElementById('book-date-filter').value = new Date().toISOString().split('T')[0];
+                    this.loadBookings();
+                } else if (hash === 'settings') {
+                    this.loadSettings();
+                }
+            },
+
+            getTodayStr() { return new Date().toISOString().split('T')[0]; },
+
+            startListeners() {
+                if(this.unsubQueue) this.unsubQueue();
+                const qRef = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()), orderBy("queueSequence", "asc"));
+                
+                this.unsubQueue = onSnapshot(qRef, (snap) => {
+                    this.queues = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                    this.renderDashboard();
+                    this.renderQueueCards();
+                });
+            },
+
+            renderDashboard() {
+                const waiting = this.queues.filter(q => q.status === "WAITING").length;
+                const completed = this.queues.filter(q => q.status === "COMPLETED").length;
+                const serving = this.queues.find(q => q.status === "SERVING")?.queueNumber || "--";
+                
+                document.getElementById('dash-waiting').innerText = waiting;
+                document.getElementById('dash-completed').innerText = completed;
+                document.getElementById('dash-serving').innerText = serving;
+            },
+
+            renderQueueCards() {
+                const buildCard = (q, actions) => `
+                    <div class="border p-3 rounded bg-white shadow-sm hover:shadow transition-shadow relative">
+                        <div class="flex justify-between items-start mb-2">
+                            <div><span class="text-xl font-bold text-darkblue">${q.queueNumber}</span></div>
+                            <div class="text-xs text-gray-500">${new Date(q.createdAt?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        </div>
+                        <div class="text-sm text-gray-700 font-semibold">${q.customerName || 'Walk-in'}</div>
+                        <div class="text-xs text-gray-500 mb-3">${q.serviceName} | ${q.barberName}</div>
+                        <div class="flex space-x-2 border-t pt-2">${actions}</div>
+                    </div>`;
+
+                const waitingHtml = this.queues.filter(q=>q.status==="WAITING").map(q => buildCard(q, `
+                    <button onclick="adminApp.updateQ('${q.id}', 'CALLED')" class="flex-1 bg-blue-600 text-white text-xs py-1 rounded hover:bg-blue-700">CALL NEXT</button>
+                    <button onclick="adminApp.updateQ('${q.id}', 'CANCELLED')" class="px-2 bg-gray-200 text-gray-600 text-xs py-1 rounded hover:bg-gray-300"><i class="fas fa-times"></i></button>
+                `)).join('');
+
+                const calledHtml = this.queues.filter(q=>q.status==="CALLED").map(q => buildCard(q, `
+                    <button onclick="adminApp.updateQ('${q.id}', 'SERVING')" class="flex-1 bg-green-600 text-white text-xs py-1 rounded hover:bg-green-700">START SERVICE</button>
+                    <button onclick="adminApp.updateQ('${q.id}', 'WAITING')" class="px-2 bg-yellow-200 text-yellow-800 text-xs py-1 rounded">RECALL</button>
+                `)).join('');
+
+                const servingHtml = this.queues.filter(q=>q.status==="SERVING").map(q => buildCard(q, `
+                    <button onclick="adminApp.updateQ('${q.id}', 'COMPLETED')" class="flex-1 bg-darkblue text-white text-xs py-1 rounded hover:bg-primary">COMPLETE</button>
+                `)).join('');
+
+                document.getElementById('q-waiting-list').innerHTML = waitingHtml || '<p class="text-gray-400 text-sm p-4 text-center">Empty</p>';
+                document.getElementById('q-called-list').innerHTML = calledHtml || '<p class="text-gray-400 text-sm p-4 text-center">Empty</p>';
+                document.getElementById('q-serving-list').innerHTML = servingHtml || '<p class="text-gray-400 text-sm p-4 text-center">Empty</p>';
+            },
+
+            async updateQ(id, status) {
+                try {
+                    const data = { status };
+                    if(status === 'CALLED') data.calledAt = serverTimestamp();
+                    if(status === 'SERVING') data.startedAt = serverTimestamp();
+                    if(status === 'COMPLETED') data.completedAt = serverTimestamp();
+                    await updateDoc(doc(db, "queues", id), data);
+                } catch(e) { console.error(e); alert("Error updating status"); }
+            },
+
+            async loadBookings() {
+                const date = document.getElementById('book-date-filter').value;
+                if(this.unsubBook) this.unsubBook();
+                const bRef = query(collection(db, "bookings"), where("date", "==", date));
+                this.unsubBook = onSnapshot(bRef, (snap) => {
+                    const html = snap.docs.map(d => {
+                        const b = d.data();
+                        return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3"><div class="font-bold text-darkblue">${b.startTime}</div><div class="text-xs text-gray-500">${b.bookingId}</div></td>
+                            <td class="p-3 font-semibold">${b.customerName}<br><span class="text-xs font-normal text-gray-500">${b.phone}</span></td>
+                            <td class="p-3 text-sm">${b.serviceName}<br><span class="text-gray-500">${b.barberName}</span></td>
+                            <td class="p-3"><span class="px-2 py-1 text-xs font-bold rounded ${b.status==='CONFIRMED'?'bg-blue-100 text-blue-800':(b.status==='COMPLETED'?'bg-green-100 text-green-800':'bg-gray-200')}">${b.status}</span></td>
+                            <td class="p-3 text-right space-x-1">
+                                ${b.status === 'CONFIRMED' ? `<button onclick="adminApp.updateB('${d.id}', 'COMPLETED')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Complete</button> <button onclick="adminApp.updateB('${d.id}', 'CANCELLED')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Cancel</button>` : ''}
+                            </td>
+                        </tr>`;
+                    }).join('');
+                    document.getElementById('bookings-table-body').innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-gray-500">No bookings for this date.</td></tr>';
+                    document.getElementById('dash-bookings').innerText = snap.size;
+                });
+            },
+
+            async updateB(id, status) {
+                await updateDoc(doc(db, "bookings", id), { status, updatedAt: serverTimestamp() });
+            },
+
+            async loadSettings() {
+                const snap = await getDoc(doc(db, "settings", "general"));
+                if(snap.exists()) {
+                    const d = snap.data();
+                    document.getElementById('set-name').value = d.shopName || '';
+                    document.getElementById('set-prefix').value = d.queuePrefix || '';
+                    document.getElementById('set-duration').value = d.avgDuration || 30;
+                }
+            },
+
+            async saveSettings() {
+                await setDoc(doc(db, "settings", "general"), {
+                    shopName: document.getElementById('set-name').value,
+                    queuePrefix: document.getElementById('set-prefix').value,
+                    avgDuration: parseInt(document.getElementById('set-duration').value)
+                }, {merge: true});
+                alert("Settings Saved!");
+            },
+
+            // --- TV DISPLAY LOGIC ---
+            initTV() {
+                document.getElementById('view-login').classList.add('hidden-view');
+                document.getElementById('sidebar').classList.add('hidden-view');
+                document.getElementById('main-content').classList.add('hidden-view');
+                document.getElementById('view-tv').classList.remove('hidden-view');
+                
+                getDoc(doc(db, "settings", "general")).then(s => {
+                    if(s.exists()) document.getElementById('tv-shopname').innerText = (s.data().shopName || 'BARBERSHOP').toUpperCase();
+                });
+
+                const qRef = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()), orderBy("queueSequence", "asc"));
+                onSnapshot(qRef, snap => {
+                    const qs = snap.docs.map(d=>d.data());
+                    const serving = qs.find(q=>q.status==="SERVING")?.queueNumber || "--";
+                    const nextQs = qs.filter(q=>q.status==="CALLED" || q.status==="WAITING").slice(0, 3);
+                    
+                    document.getElementById('tv-serving').innerText = serving;
+                    document.getElementById('tv-next-1').innerText = nextQs[0] ? nextQs[0].queueNumber : '--';
+                    document.getElementById('tv-next-2').innerText = nextQs[1] ? nextQs[1].queueNumber : '';
+                    document.getElementById('tv-next-3').innerText = nextQs[2] ? nextQs[2].queueNumber : '';
+                });
+            }
+        };
+
+        window.adminApp = AdminApp;
+        document.addEventListener('DOMContentLoaded', () => AdminApp.init());
+    </script>
+</body>
+</html>
