@@ -5,396 +5,373 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard - Barbershop</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { primary: '#0f172a', secondary: '#1e3a8a', bglight: '#f1f5f9' } } }
+            theme: { extend: { colors: { primary: '#1e3a8a', dark: '#0f172a' } } }
         }
     </script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f1f5f9; }
-        .view { display: none; }
-        .view.active { display: block; }
-        .tv-mode-active #sidebar, .tv-mode-active #topbar { display: none !important; }
-        .tv-mode-active #main-content { margin-left: 0 !important; padding: 0 !important; max-width: 100% !important; }
+        .hidden-view { display: none !important; }
+        /* TV Display Styles */
+        #view-tv { background: #000; color: #fff; position: fixed; top:0; left:0; width:100vw; height:100vh; z-index: 9999; }
+        .tv-grid { display: grid; grid-template-columns: 2fr 1fr; height: calc(100vh - 100px); }
     </style>
 </head>
-<body class="text-slate-800 antialiased h-screen overflow-hidden flex">
+<body class="bg-gray-100 text-gray-800 font-sans antialiased">
 
-    <!-- Login View -->
-    <div id="view-login" class="view active w-full h-full flex items-center justify-center bg-primary z-50 fixed inset-0">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
-            <div class="text-center mb-6">
-                <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold mb-2">B</div>
-                <h2 class="text-2xl font-bold text-slate-800">Admin Login</h2>
-            </div>
-            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="email" id="login-email" required placeholder="Admin Email" class="w-full p-3 border rounded focus:ring-2 focus:ring-primary">
-                <input type="password" id="login-password" required placeholder="Password" class="w-full p-3 border rounded focus:ring-2 focus:ring-primary">
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded hover:bg-secondary">LOGIN</button>
-                <div id="login-error" class="text-red-500 text-sm text-center hidden"></div>
+    <!-- LOGIN VIEW -->
+    <div id="view-login" class="min-h-screen flex items-center justify-center bg-gray-900 hidden-view">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <h1 class="text-3xl font-bold text-center text-primary mb-2">Admin Portal</h1>
+            <p class="text-center text-gray-500 mb-6">Sign in to manage barbershop</p>
+            <form id="form-login" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" required class="w-full mt-1 border-gray-300 rounded-md shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-pass" required class="w-full mt-1 border-gray-300 rounded-md shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                </div>
+                <div id="login-error" class="text-red-500 text-sm hidden"></div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-lg shadow hover:bg-blue-800 transition">LOGIN</button>
             </form>
         </div>
     </div>
 
-    <!-- Main App Layout (Hidden until logged in) -->
-    <div id="app-layout" class="hidden w-full h-full flex">
+    <!-- MAIN APP SHELL -->
+    <div id="view-app" class="flex h-screen overflow-hidden hidden-view">
         
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-primary text-slate-300 flex flex-col transition-all h-full shrink-0">
-            <div class="p-4 border-b border-slate-700 flex items-center space-x-3">
-                <div class="w-8 h-8 bg-white text-primary rounded flex items-center justify-center font-bold">B</div>
-                <span class="font-bold text-white tracking-widest text-lg">OWNER</span>
+        <aside class="w-64 bg-dark text-gray-300 flex flex-col transition-all">
+            <div class="h-16 flex items-center px-6 bg-gray-900 font-bold text-white tracking-widest">
+                <i class="fas fa-cut mr-2"></i> ADMIN
             </div>
-            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <a href="#dashboard" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Dashboard</a>
-                <a href="#queues" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Live Queue</a>
-                <a href="#bookings" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Bookings</a>
-                <a href="#barbers" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Barbers</a>
-                <a href="#services" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Services</a>
-                <a href="#settings" class="nav-link block p-3 rounded hover:bg-slate-800 hover:text-white transition">Settings</a>
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <button onclick="app.nav('dashboard')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="dashboard">
+                    <i class="fas fa-home w-6"></i> Dashboard
+                </button>
+                <button onclick="app.nav('queue')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="queue">
+                    <i class="fas fa-users w-6"></i> Queue
+                </button>
+                <button onclick="app.nav('bookings')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="bookings">
+                    <i class="far fa-calendar-check w-6"></i> Bookings
+                </button>
+                <div class="pt-4 pb-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">Management</div>
+                <button onclick="app.nav('barbers')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="barbers">
+                    <i class="fas fa-user-tie w-6"></i> Barbers
+                </button>
+                <button onclick="app.nav('services')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="services">
+                    <i class="fas fa-list w-6"></i> Services
+                </button>
+                <button onclick="app.nav('settings')" class="nav-btn w-full flex items-center px-4 py-3 text-sm rounded-lg hover:bg-gray-800 hover:text-white" data-target="settings">
+                    <i class="fas fa-cog w-6"></i> Settings
+                </button>
             </nav>
-            <div class="p-4 border-t border-slate-700 space-y-2">
-                <a href="#tv" class="block p-3 rounded bg-blue-600 text-white text-center font-bold hover:bg-blue-500">Launch TV Display</a>
-                <button onclick="handleLogout()" class="w-full p-3 rounded hover:bg-red-600 hover:text-white text-left transition">Logout</button>
+            <div class="p-4 border-t border-gray-800">
+                <button onclick="app.nav('tv')" class="w-full flex items-center px-4 py-2 text-sm text-blue-400 hover:text-blue-300 mb-2">
+                    <i class="fas fa-tv w-6"></i> Launch TV Display
+                </button>
+                <button id="btn-logout" class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:text-red-300">
+                    <i class="fas fa-sign-out-alt w-6"></i> Logout
+                </button>
             </div>
         </aside>
 
-        <!-- Content Area -->
-        <main id="main-content" class="flex-1 flex flex-col h-full overflow-hidden bg-bglight">
-            
-            <header id="topbar" class="bg-white shadow px-6 py-4 flex justify-between items-center shrink-0">
-                <h2 id="topbar-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
-                <div class="text-sm font-medium text-slate-500" id="current-date"></div>
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+            <header class="h-16 bg-white shadow-sm flex items-center px-8 justify-between">
+                <h2 class="text-xl font-semibold text-gray-800" id="header-title">Dashboard</h2>
+                <div class="text-sm text-gray-500" id="header-date"></div>
             </header>
-
-            <div class="flex-1 overflow-auto p-6 relative">
-
-                <!-- View: Dashboard -->
-                <div id="view-dashboard" class="view space-y-6">
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                            <div class="text-sm text-slate-500 uppercase font-bold">Waiting Queue</div>
-                            <div class="text-3xl font-black text-slate-800 mt-2" id="dash-waiting">0</div>
+            
+            <div class="flex-1 overflow-auto p-8 relative">
+                
+                <!-- DASHBOARD -->
+                <div id="sec-dashboard" class="app-section">
+                    <div class="grid grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-yellow-400">
+                            <p class="text-sm text-gray-500 font-medium">Waiting Queue</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-2" id="dash-waiting">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
-                            <div class="text-sm text-slate-500 uppercase font-bold">Serving Now</div>
-                            <div class="text-3xl font-black text-slate-800 mt-2" id="dash-serving">0</div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                            <p class="text-sm text-gray-500 font-medium">Serving Now</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-2" id="dash-serving">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500">
-                            <div class="text-sm text-slate-500 uppercase font-bold">Bookings Today</div>
-                            <div class="text-3xl font-black text-slate-800 mt-2" id="dash-bookings">0</div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                            <p class="text-sm text-gray-500 font-medium">Completed Today</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-2" id="dash-completed">0</p>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow border-l-4 border-slate-800">
-                            <div class="text-sm text-slate-500 uppercase font-bold">Completed Today</div>
-                            <div class="text-3xl font-black text-slate-800 mt-2" id="dash-completed">0</div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-purple-500">
+                            <p class="text-sm text-gray-500 font-medium">Bookings Today</p>
+                            <p class="text-3xl font-bold text-gray-800 mt-2" id="dash-bookings">0</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- View: Queues -->
-                <div id="view-queues" class="view space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-bold">Today's Queue</h3>
-                        <button onclick="document.getElementById('manual-queue-modal').classList.remove('hidden')" class="bg-primary text-white px-4 py-2 rounded shadow">Add Manual Queue</button>
+                <!-- QUEUE MANAGEMENT -->
+                <div id="sec-queue" class="app-section hidden-view">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold">Active Queue</h3>
+                        <button class="bg-primary text-white px-4 py-2 rounded shadow hover:bg-blue-800 text-sm" onclick="alert('Manual queue addition requires Cloud Function setup to ensure atomic numbering. To implement, map this to an admin form calling apiJoinQueue.')">
+                            <i class="fas fa-plus mr-1"></i> Add Manual
+                        </button>
                     </div>
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-100 text-slate-600">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="p-3">No</th>
-                                    <th class="p-3">Customer</th>
-                                    <th class="p-3">Service</th>
-                                    <th class="p-3">Barber</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-queues" class="divide-y">
-                                <!-- JS injected -->
+                            <tbody id="queue-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Generated by JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- View: Bookings -->
-                <div id="view-bookings" class="view space-y-4">
-                    <h3 class="text-lg font-bold">Today's Bookings</h3>
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-100 text-slate-600">
+                <!-- BOOKINGS -->
+                <div id="sec-bookings" class="app-section hidden-view">
+                    <h3 class="text-lg font-bold mb-6">Today's Bookings</h3>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="p-3">Time</th>
-                                    <th class="p-3">Customer</th>
-                                    <th class="p-3">Service / Barber</th>
-                                    <th class="p-3">Status</th>
-                                    <th class="p-3 text-right">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service/Barber</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="table-bookings" class="divide-y">
-                                <!-- JS injected -->
+                            <tbody id="bookings-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Generated by JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- View: Barbers -->
-                <div id="view-barbers" class="view space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-bold">Manage Barbers</h3>
-                    </div>
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-100 text-slate-600">
-                                <tr><th class="p-3">Name</th><th class="p-3">Status</th></tr>
-                            </thead>
-                            <tbody id="table-barbers" class="divide-y"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- View: TV Display (Fullscreen override) -->
-                <div id="view-tv" class="view fixed inset-0 bg-primary text-white flex flex-col z-[100] p-10 h-screen w-screen hidden">
-                    <div class="text-center mb-10">
-                        <h1 id="tv-shop-name" class="text-5xl font-black tracking-widest text-blue-400">BARBERSHOP</h1>
-                    </div>
-                    <div class="flex-1 flex gap-10">
-                        <div class="flex-1 flex flex-col justify-center items-center bg-white text-primary rounded-3xl p-10 shadow-2xl">
-                            <div class="text-4xl font-bold mb-4 uppercase tracking-wider text-slate-500">Now Serving</div>
-                            <div id="tv-serving" class="text-[12rem] font-black leading-none">-</div>
-                        </div>
-                        <div class="w-1/3 bg-slate-800 rounded-3xl p-10 flex flex-col">
-                            <div class="text-3xl font-bold mb-8 uppercase text-slate-400">Next in Line</div>
-                            <div id="tv-next-list" class="space-y-6 flex-1 text-6xl font-bold">
-                                <!-- JS injected -->
-                            </div>
-                            <button onclick="navigate('dashboard')" class="text-sm text-slate-600 hover:text-white mt-auto text-center">Exit TV Mode</button>
-                        </div>
-                    </div>
-                </div>
+                <!-- DUMMY SECTIONS FOR MVP COMPLETENESS -->
+                <div id="sec-barbers" class="app-section hidden-view"><p class="text-gray-500">Barber Management UI goes here. Connects to `barbers` collection.</p></div>
+                <div id="sec-services" class="app-section hidden-view"><p class="text-gray-500">Service Management UI goes here. Connects to `services` collection.</p></div>
+                <div id="sec-settings" class="app-section hidden-view"><p class="text-gray-500">Settings UI goes here. Connects to `settings/business` doc.</p></div>
 
             </div>
         </main>
     </div>
 
-    <!-- Firebase Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, doc, updateDoc, onSnapshot, query, where, orderBy, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    <!-- TV DISPLAY VIEW (Full Screen) -->
+    <div id="view-tv" class="hidden-view">
+        <div class="h-24 bg-gray-900 flex items-center justify-between px-10 border-b border-gray-800">
+            <h1 class="text-4xl font-bold tracking-widest text-white" id="tv-shop-name">BARBERSHOP</h1>
+            <button onclick="app.nav('dashboard')" class="text-gray-500 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+        </div>
+        <div class="tv-grid">
+            <!-- Now Serving -->
+            <div class="border-r border-gray-800 flex flex-col justify-center items-center p-10 relative bg-gradient-to-b from-gray-900 to-black">
+                <h2 class="text-3xl text-gray-400 font-bold tracking-widest uppercase mb-4">Now Serving</h2>
+                <div class="text-[12rem] font-black text-blue-500 leading-none tracking-tighter" id="tv-serving">--</div>
+                <div class="text-4xl text-gray-300 mt-8" id="tv-serving-barber"></div>
+            </div>
+            <!-- Next Up -->
+            <div class="bg-gray-900 p-10 flex flex-col">
+                <h2 class="text-2xl text-gray-500 font-bold tracking-widest uppercase mb-8 border-b border-gray-800 pb-4">Next in Line</h2>
+                <div class="flex-1 space-y-6" id="tv-next-list">
+                    <!-- JS Generated -->
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- FIREBASE & APP LOGIC -->
+    <script>
+        window.app = {
+            nav: (secId) => {
+                if(secId === 'tv') {
+                    document.getElementById('view-app').classList.add('hidden-view');
+                    document.getElementById('view-tv').classList.remove('hidden-view');
+                    if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+                    return;
+                }
+                document.getElementById('view-tv').classList.add('hidden-view');
+                document.getElementById('view-app').classList.remove('hidden-view');
+                
+                document.querySelectorAll('.app-section').forEach(el => el.classList.add('hidden-view'));
+                const sec = document.getElementById(`sec-${secId}`);
+                if(sec) sec.classList.remove('hidden-view');
+                
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    if(btn.dataset.target === secId) btn.classList.add('bg-gray-800', 'text-white');
+                    else btn.classList.remove('bg-gray-800', 'text-white');
+                });
+
+                const title = document.getElementById('header-title');
+                if(title) title.innerText = secId.charAt(0).toUpperCase() + secId.slice(1);
+            },
+            updateStatus: () => console.log('Waiting for Firebase to load...'),
+            updateBooking: () => console.log('Waiting for Firebase to load...')
+        };
+    </script>
+    <script type="module">
         // ================================
         // FIREBASE CONFIGURATION
         // Replace these values
         // ================================
-        const firebaseConfig = {
-          apiKey: "AIzaSyBBXZkkgYlQgEvVwNcVeYJpBfcaFNo89j0",
+        let firebaseConfig = {
+            apiKey: "AIzaSyBBXZkkgYlQgEvVwNcVeYJpBfcaFNo89j0",
           authDomain: "my-barbershop-b9cf4.firebaseapp.com",
           projectId: "my-barbershop-b9cf4",
           storageBucket: "my-barbershop-b9cf4.firebasestorage.app",
           messagingSenderId: "201737777127",
           appId: "1:201737777127:web:ee0705ef36380be3221742",
-};
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        const state = {
-            queues: [], bookings: [], barbers: [], today: new Date().toISOString().split('T')[0]
         };
 
-        const escapeHTML = str => String(str).replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag));
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, doc, getDocs, updateDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getFirestore(firebaseApp);
+        const auth = getAuth(firebaseApp);
+
+        // UI State
+        document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        window.app.updateStatus = async (docId, newStatus) => {
+            if(newStatus === 'CANCELLED' && !confirm('Are you sure you want to cancel this queue?')) return;
+            try {
+                await updateDoc(doc(db, "queues", docId), { status: newStatus, updatedAt: new Date().toISOString() });
+            } catch(e) { alert("Error updating status: " + e.message); }
+        };
+        
+        window.app.updateBooking = async (docId, newStatus) => {
+            try { await updateDoc(doc(db, "bookings", docId), { status: newStatus }); } 
+            catch(e) { alert("Error updating booking: " + e.message); }
+        };
 
         // Auth Logic
-        onAuthStateChanged(auth, user => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('view-login').classList.remove('active');
-                document.getElementById('app-layout').classList.remove('hidden');
-                initData();
-                handleRouting();
+                document.getElementById('view-login').classList.add('hidden-view');
+                document.getElementById('view-app').classList.remove('hidden-view');
+                app.nav('dashboard');
+                initAdminListeners();
             } else {
-                document.getElementById('app-layout').classList.add('hidden');
-                document.getElementById('view-login').classList.add('active');
-                document.body.classList.remove('tv-mode-active');
+                document.getElementById('view-app').classList.add('hidden-view');
+                document.getElementById('view-tv').classList.add('hidden-view');
+                document.getElementById('view-login').classList.remove('hidden-view');
             }
         });
 
-        window.handleLogin = async (e) => {
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
             e.preventDefault();
             const err = document.getElementById('login-error');
+            err.classList.add('hidden');
             try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value);
             } catch (error) {
-                err.textContent = "Invalid credentials.";
+                err.innerText = "Login failed. Check credentials.";
                 err.classList.remove('hidden');
             }
-        };
+        });
 
-        window.handleLogout = () => signOut(auth);
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
 
-        // Routing
-        window.navigate = (hash) => window.location.hash = hash;
-        
-        function handleRouting() {
-            if(!auth.currentUser) return;
-            const hash = window.location.hash.replace('#', '') || 'dashboard';
-            
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('bg-slate-800', 'text-white'));
+        // Realtime Data Listeners
+        function initAdminListeners() {
+            const today = new Date().toISOString().split('T')[0];
 
-            const targetView = document.getElementById(`view-${hash}`);
-            if (targetView) targetView.classList.add('active');
-
-            if(hash === 'tv') {
-                document.body.classList.add('tv-mode-active');
-                document.getElementById('view-tv').classList.remove('hidden');
-                document.getElementById('view-tv').classList.add('active');
-            } else {
-                document.body.classList.remove('tv-mode-active');
-                document.getElementById('view-tv').classList.add('hidden');
-                const link = document.querySelector(`.nav-link[href="#${hash}"]`);
-                if(link) link.classList.add('bg-slate-800', 'text-white');
-                document.getElementById('topbar-title').textContent = hash.charAt(0).toUpperCase() + hash.slice(1);
-            }
-        }
-        window.addEventListener('hashchange', handleRouting);
-
-        // Data Initialization & Listeners
-        function initData() {
-            // Listen to Today's Queue
-            const qQuery = query(collection(db, "queues"), where("businessDate", "==", state.today), orderBy("queueSequence", "asc"));
-            onSnapshot(qQuery, (snapshot) => {
-                state.queues = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                renderQueues();
-                renderDashboard();
-                renderTV();
-            });
-
-            // Listen to Today's Bookings
-            const bQuery = query(collection(db, "bookings"), where("date", "==", state.today), orderBy("startTime", "asc"));
-            onSnapshot(bQuery, (snapshot) => {
-                state.bookings = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                renderBookings();
-                renderDashboard();
-            });
-
-            // Listen to Barbers
-            onSnapshot(collection(db, "barbers"), (snapshot) => {
-                state.barbers = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                renderBarbers();
-            });
-
-            // Shop Name for TV
-            onSnapshot(doc(db, "settings", "business"), (docSnap) => {
-                if(docSnap.exists() && docSnap.data().shopName) {
-                    document.getElementById('tv-shop-name').textContent = escapeHTML(docSnap.data().shopName);
-                }
-            });
-        }
-
-        function renderDashboard() {
-            const waiting = state.queues.filter(q => q.status === 'WAITING').length;
-            const serving = state.queues.filter(q => q.status === 'SERVING').length;
-            const completed = state.queues.filter(q => q.status === 'COMPLETED').length;
-            const books = state.bookings.length;
-
-            document.getElementById('dash-waiting').textContent = waiting;
-            document.getElementById('dash-serving').textContent = serving;
-            document.getElementById('dash-completed').textContent = completed;
-            document.getElementById('dash-bookings').textContent = books;
-        }
-
-        // --- Queue Management ---
-        function renderQueues() {
-            const tbody = document.getElementById('table-queues');
-            tbody.innerHTML = state.queues.map(q => {
-                const statusColor = q.status === 'WAITING' ? 'bg-blue-100 text-blue-800' :
-                                   q.status === 'CALLED' ? 'bg-yellow-100 text-yellow-800' :
-                                   q.status === 'SERVING' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800';
+            // QUEUE LISTENER
+            const qQuery = query(collection(db, "queues"), where("businessDate", "==", today), orderBy("queueSequence", "asc"));
+            onSnapshot(qQuery, (snap) => {
+                let waiting = 0, serving = 0, completed = 0;
+                let tableHtml = '';
+                let nextTvHtml = '';
+                let tvServingNum = '--';
                 
-                let actions = '';
-                if(q.status === 'WAITING') actions = `<button onclick="updateQ('${q.id}', 'CALLED')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded hover:bg-blue-100">CALL</button>`;
-                if(q.status === 'CALLED') actions = `<button onclick="updateQ('${q.id}', 'SERVING')" class="text-green-600 font-bold px-2 py-1 bg-green-50 rounded hover:bg-green-100">START</button>
-                                                     <button onclick="updateQ('${q.id}', 'WAITING')" class="text-slate-600 text-xs px-2 py-1">Undo</button>`;
-                if(q.status === 'SERVING') actions = `<button onclick="updateQ('${q.id}', 'COMPLETED')" class="text-primary font-bold px-2 py-1 border rounded hover:bg-slate-50">COMPLETE</button>`;
-                if(['WAITING', 'CALLED'].includes(q.status)) actions += `<button onclick="updateQ('${q.id}', 'CANCELLED')" class="text-red-500 text-xs px-2 py-1 ml-2">Cancel</button>`;
+                snap.docs.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    if(d.status === 'WAITING') waiting++;
+                    if(d.status === 'SERVING' || d.status === 'CALLED') serving++;
+                    if(d.status === 'COMPLETED') completed++;
+
+                    // Build Admin Table
+                    if(['WAITING', 'CALLED', 'SERVING'].includes(d.status)) {
+                        let btnHtml = '';
+                        if(d.status === 'WAITING') {
+                            btnHtml = `<button onclick="app.updateStatus('${id}','CALLED')" class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded border border-blue-200 mr-1 text-xs">Call</button>
+                                       <button onclick="app.updateStatus('${id}','CANCELLED')" class="text-red-600 hover:bg-red-50 px-2 py-1 rounded border border-red-200 text-xs">Cancel</button>`;
+                        } else if(d.status === 'CALLED') {
+                            btnHtml = `<button onclick="app.updateStatus('${id}','SERVING')" class="text-green-600 hover:bg-green-50 px-2 py-1 rounded border border-green-200 text-xs">Start</button>`;
+                        } else if(d.status === 'SERVING') {
+                            btnHtml = `<button onclick="app.updateStatus('${id}','COMPLETED')" class="text-gray-800 hover:bg-gray-100 px-2 py-1 rounded border border-gray-300 text-xs">Complete</button>`;
+                        }
+
+                        let statusColor = d.status==='WAITING'?'yellow':(d.status==='CALLED'?'green':'blue');
+                        
+                        tableHtml += `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${d.queueNumber}</td>
+                                <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${d.customerName}</div><div class="text-xs text-gray-500">${d.phone}</div></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.serviceName||'Service'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-${statusColor}-100 text-${statusColor}-800">${d.status}</span></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${btnHtml}</td>
+                            </tr>
+                        `;
+                    }
+
+                    // Build TV Display
+                    if(d.status === 'SERVING' || d.status === 'CALLED') {
+                        tvServingNum = d.queueNumber;
+                        document.getElementById('tv-serving-barber').innerText = d.barberName ? `With ${d.barberName}` : '';
+                    }
+                    if(d.status === 'WAITING' && waiting <= 5) {
+                        nextTvHtml += `<div class="text-6xl font-bold text-gray-200">${d.queueNumber}</div>`;
+                    }
+                });
+
+                document.getElementById('dash-waiting').innerText = waiting;
+                document.getElementById('dash-serving').innerText = serving;
+                document.getElementById('dash-completed').innerText = completed;
+                document.getElementById('queue-table-body').innerHTML = tableHtml || '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No active queues</td></tr>';
                 
-                return `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-3 font-bold text-lg">${escapeHTML(q.queueNumber)}</td>
-                    <td class="p-3">
-                        <div class="font-bold">${escapeHTML(q.customerName)}</div>
-                        <div class="text-xs text-slate-500">${escapeHTML(q.phone)}</div>
-                    </td>
-                    <td class="p-3">${escapeHTML(q.serviceName)}</td>
-                    <td class="p-3">${escapeHTML(q.barberName || 'Any')}</td>
-                    <td class="p-3"><span class="px-2 py-1 text-xs font-bold rounded ${statusColor}">${q.status}</span></td>
-                    <td class="p-3 text-right space-x-1">${actions}</td>
-                </tr>
-            `}).join('');
+                // Update TV
+                document.getElementById('tv-serving').innerText = tvServingNum;
+                document.getElementById('tv-next-list').innerHTML = nextTvHtml;
+            });
+
+            // BOOKINGS LISTENER
+            const bQuery = query(collection(db, "bookings"), where("date", "==", today), orderBy("time", "asc"));
+            onSnapshot(bQuery, (snap) => {
+                document.getElementById('dash-bookings').innerText = snap.size;
+                let bHtml = '';
+                snap.docs.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const id = docSnap.id;
+                    let actions = `<button onclick="app.updateBooking('${id}','ARRIVED')" class="text-blue-600 hover:underline mr-2 text-xs">Arrived</button>`;
+                    if(d.status==='ARRIVED') actions = `<button onclick="app.updateBooking('${id}','COMPLETED')" class="text-green-600 hover:underline text-xs">Complete</button>`;
+                    
+                    bHtml += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">${d.time}</td>
+                            <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium">${d.customerName}</div></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${d.serviceName} / ${d.barberName}</td>
+                            <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 text-xs font-semibold rounded-full bg-gray-100">${d.status}</span></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">${actions}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('bookings-table-body').innerHTML = bHtml || '<tr><td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No bookings today</td></tr>';
+            });
         }
-
-        window.updateQ = async (id, status) => {
-            await updateDoc(doc(db, "queues", id), { status, updatedAt: serverTimestamp() });
-        };
-
-        // --- Booking Management ---
-        function renderBookings() {
-            const tbody = document.getElementById('table-bookings');
-            tbody.innerHTML = state.bookings.map(b => {
-                let actions = '';
-                if(b.status === 'CONFIRMED') actions = `<button onclick="updateB('${b.id}', 'ARRIVED')" class="text-blue-600 font-bold px-2 py-1 bg-blue-50 rounded">Arrived</button> <button onclick="updateB('${b.id}', 'NO_SHOW')" class="text-red-500 text-xs">No-Show</button>`;
-                if(b.status === 'ARRIVED') actions = `<button onclick="updateB('${b.id}', 'SERVING')" class="text-green-600 font-bold px-2 py-1 bg-green-50 rounded">Start</button>`;
-                if(b.status === 'SERVING') actions = `<button onclick="updateB('${b.id}', 'COMPLETED')" class="text-primary font-bold px-2 py-1 border rounded">Complete</button>`;
-
-                return `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-3 font-bold text-primary">${escapeHTML(b.startTime)}</td>
-                    <td class="p-3">
-                        <div class="font-bold">${escapeHTML(b.customerName)}</div>
-                        <div class="text-xs text-slate-500">${b.bookingId}</div>
-                    </td>
-                    <td class="p-3">
-                        <div>${escapeHTML(b.serviceName)}</div>
-                        <div class="text-xs text-slate-500">with ${escapeHTML(b.barberName)}</div>
-                    </td>
-                    <td class="p-3"><span class="px-2 py-1 text-xs font-bold rounded bg-slate-100">${b.status}</span></td>
-                    <td class="p-3 text-right">${actions}</td>
-                </tr>
-            `}).join('');
-        }
-        
-        window.updateB = async (id, status) => {
-            await updateDoc(doc(db, "bookings", id), { status, updatedAt: serverTimestamp() });
-        };
-
-        // --- Barbers ---
-        function renderBarbers() {
-            document.getElementById('table-barbers').innerHTML = state.barbers.map(b => `
-                <tr><td class="p-3 font-bold">${escapeHTML(b.name)}</td><td class="p-3">${b.active ? 'Active' : 'Inactive'}</td></tr>
-            `).join('');
-        }
-
-        // --- TV Display ---
-        function renderTV() {
-            const serving = state.queues.filter(q => q.status === 'SERVING' || q.status === 'CALLED');
-            const waiting = state.queues.filter(q => q.status === 'WAITING').slice(0, 5);
-
-            const servingDiv = document.getElementById('tv-serving');
-            if (serving.length > 0) {
-                // If recently called, pulse
-                servingDiv.className = serving[0].status === 'CALLED' ? 'text-[12rem] font-black leading-none text-yellow-500 animate-pulse' : 'text-[12rem] font-black leading-none text-green-600';
-                servingDiv.textContent = serving[0].queueNumber;
-            } else {
-                servingDiv.textContent = '-';
-                servingDiv.className = 'text-[12rem] font-black leading-none text-slate-300';
-            }
-
-            document.getElementById('tv-next-list').innerHTML = waiting.map(q => `<div>${q.queueNumber}</div>`).join('');
-        }
-
     </script>
 </body>
 </html>
