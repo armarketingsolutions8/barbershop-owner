@@ -42,7 +42,17 @@
     </div>
 
     <!-- TV Display View (Public, No Login) -->
-    <div id="view-tv" class="hidden-view absolute inset-0 z-50 tv-mode p-8">
+    <div id="view-tv" class="hidden-view absolute inset-0 z-50 tv-mode p-8 relative">
+        
+        <!-- Butang Start untuk Benarkan Bunyi (Browser Policy) -->
+        <div id="tv-start-overlay" class="absolute inset-0 bg-darkblue z-50 flex flex-col items-center justify-center">
+            <h2 class="text-2xl text-gray-400 mb-8">Paparan TV Bersedia</h2>
+            <button onclick="adminApp.startTV()" class="bg-blue-600 text-white text-3xl font-bold py-6 px-12 rounded-2xl shadow-2xl hover:bg-blue-500 transition-all border-4 border-blue-400">
+                <i class="fas fa-play mr-4"></i> MULA PAPARAN TV
+            </button>
+            <p class="text-gray-500 mt-6 max-w-md text-center">Nota: Klik butang di atas diperlukan untuk membenarkan sistem web memainkan bunyi loceng/suara.</p>
+        </div>
+
         <h1 class="text-5xl font-bold tracking-widest mb-12 opacity-80" id="tv-shopname">BARBERSHOP</h1>
         <div class="grid grid-cols-2 gap-12 w-full max-w-6xl">
             <div class="bg-primary bg-opacity-20 p-12 rounded-3xl border border-primary text-center">
@@ -170,7 +180,7 @@
     <script type="module">
         // ================================
         // FIREBASE CONFIGURATION
-        // Replace these values
+        // Sila masukkan configuration Firebase anda di bawah!
         // ================================
         const firebaseConfig = {
             apiKey: "AIzaSyBBXZkkgYlQgEvVwNcVeYJpBfcaFNo89j0",
@@ -193,6 +203,7 @@
             unsubQueue: null,
             unsubBook: null,
             queues: [],
+            lastCalledId: null, // Untuk track giliran mana yang baru dipanggil
             
             init() {
                 document.getElementById('current-date').innerText = new Date().toDateString();
@@ -264,7 +275,6 @@
             startListeners() {
                 if(this.unsubQueue) this.unsubQueue();
                 
-                // Client-side sorting to eliminate need for complex Firestore Composite Index
                 const qRef = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()));
                 
                 this.unsubQueue = onSnapshot(qRef, (snap) => {
@@ -378,21 +388,32 @@
                 alert("Settings Saved!");
             },
 
-            // --- TV DISPLAY LOGIC ---
+            // --- TV DISPLAY & AUDIO LOGIC ---
             initTV() {
                 document.getElementById('view-login').classList.add('hidden-view');
                 document.getElementById('sidebar').classList.add('hidden-view');
                 document.getElementById('main-content').classList.add('hidden-view');
                 document.getElementById('view-tv').classList.remove('hidden-view');
-                
+                document.getElementById('tv-start-overlay').style.display = 'flex'; // Tunjuk butang Play
+
                 getDoc(doc(db, "settings", "general")).then(s => {
                     if(s.exists()) document.getElementById('tv-shopname').innerText = (s.data().shopName || 'BARBERSHOP').toUpperCase();
                 });
+            },
 
+            startTV() {
+                // Sembunyikan butang play selepas diklik
+                document.getElementById('tv-start-overlay').style.display = 'none';
+
+                // Unlock audio context di browser (Wajib buat untuk Chrome/Safari)
+                let silentMsg = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(silentMsg);
+
+                // Mula pantau perubahan database
                 const qRef = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()));
                 onSnapshot(qRef, snap => {
                     const qs = snap.docs
-                        .map(d => d.data())
+                        .map(d => ({id: d.id, ...d.data()}))
                         .sort((a, b) => (a.queueSequence || 0) - (b.queueSequence || 0));
                     
                     const serving = qs.find(q => q.status === "SERVING")?.queueNumber || "--";
@@ -402,9 +423,37 @@
                     document.getElementById('tv-next-1').innerText = nextQs[0] ? nextQs[0].queueNumber : '--';
                     document.getElementById('tv-next-2').innerText = nextQs[1] ? nextQs[1].queueNumber : '';
                     document.getElementById('tv-next-3').innerText = nextQs[2] ? nextQs[2].queueNumber : '';
+
+                    // Semak jika ada nombor BARU yang dipanggil (CALLED)
+                    const currentlyCalled = qs.filter(q => q.status === "CALLED");
+                    if (currentlyCalled.length > 0) {
+                        const activeCall = currentlyCalled[0];
+                        // Jika ID ini lain dari yang terakhir dipanggil, mainkan bunyi
+                        if (this.lastCalledId !== activeCall.id) {
+                            this.lastCalledId = activeCall.id;
+                            this.playAnnouncement(activeCall.queueNumber);
+                        }
+                    }
                 }, (err) => {
                     console.error("Firestore TV Error:", err);
                 });
+            },
+
+            playAnnouncement(number) {
+                // 1. Mainkan bunyi loceng (chime ding)
+                const chime = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                chime.play().catch(e => console.log("Audio play blocked", e));
+
+                // 2. Baca nombor menggunakan suara robot selepas loceng berbunyi
+                setTimeout(() => {
+                    // Pisahkan nombor (Contoh: "A001" jadi "A 0 0 1" supaya dibaca satu-satu digit)
+                    const splitNum = number.split('').join(' ');
+                    const msg = new SpeechSynthesisUtterance(`Nombor giliran, ${splitNum}`);
+                    msg.lang = 'ms-MY'; // Bahasa Melayu (jika browser sokong), atau fallback ke English
+                    msg.rate = 0.85; // Perlahankan sikit supaya jelas
+                    msg.pitch = 1;
+                    window.speechSynthesis.speak(msg);
+                }, 1000); // Mula sebut selepas 1 saat (lepas bunyi ding)
             }
         };
 
