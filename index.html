@@ -55,8 +55,8 @@
 
         <h1 class="text-5xl font-bold tracking-widest mb-12 opacity-80" id="tv-shopname">BARBERSHOP</h1>
         <div class="grid grid-cols-2 gap-12 w-full max-w-6xl">
-            <div class="bg-primary bg-opacity-20 p-12 rounded-3xl border border-primary text-center">
-                <h2 class="text-3xl font-semibold text-blue-300 uppercase mb-4">Now Serving</h2>
+            <div id="tv-serving-box" class="bg-primary bg-opacity-20 p-12 rounded-3xl border border-primary text-center transition-colors duration-500">
+                <h2 class="text-3xl font-semibold text-blue-300 uppercase mb-4" id="tv-main-label">Now Serving</h2>
                 <div class="text-9xl font-black text-white" id="tv-serving">--</div>
             </div>
             <div class="bg-white bg-opacity-5 p-12 rounded-3xl text-center">
@@ -270,7 +270,12 @@
                 }
             },
 
-            getTodayStr() { return new Date().toISOString().split('T')[0]; },
+            getTodayStr() { 
+                const d = new Date();
+                // Selaraskan waktu ke zon masa tempatan (Malaysia)
+                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                return d.toISOString().split('T')[0]; 
+            },
 
             startListeners() {
                 if(this.unsubQueue) this.unsubQueue();
@@ -334,7 +339,7 @@
 
             async updateQ(id, status) {
                 try {
-                    const data = { status };
+                    const data = { status, updatedAt: serverTimestamp() };
                     if(status === 'CALLED') data.calledAt = serverTimestamp();
                     if(status === 'SERVING') data.startedAt = serverTimestamp();
                     if(status === 'COMPLETED') data.completedAt = serverTimestamp();
@@ -412,30 +417,61 @@
                 // Mula pantau perubahan database
                 const qRef = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()));
                 onSnapshot(qRef, snap => {
-                    const qs = snap.docs
-                        .map(d => ({id: d.id, ...d.data()}))
-                        .sort((a, b) => (a.queueSequence || 0) - (b.queueSequence || 0));
+                    const qs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                     
-                    const serving = qs.find(q => q.status === "SERVING")?.queueNumber || "--";
-                    const nextQs = qs.filter(q => q.status === "CALLED" || q.status === "WAITING").slice(0, 3);
+                    // 1. Paparan Utama (Nombor sedang dipanggil ATAU sedang dilayan)
+                    let activeQs = qs.filter(q => q.status === "CALLED" || q.status === "SERVING");
+                    activeQs.sort((a, b) => {
+                        const timeA = (a.calledAt?.toMillis ? a.calledAt.toMillis() : 0) || (a.startedAt?.toMillis ? a.startedAt.toMillis() : 0) || 0;
+                        const timeB = (b.calledAt?.toMillis ? b.calledAt.toMillis() : 0) || (b.startedAt?.toMillis ? b.startedAt.toMillis() : 0) || 0;
+                        if (timeB === timeA) return (b.queueSequence || 0) - (a.queueSequence || 0);
+                        return timeB - timeA;
+                    });
                     
-                    document.getElementById('tv-serving').innerText = serving;
-                    document.getElementById('tv-next-1').innerText = nextQs[0] ? nextQs[0].queueNumber : '--';
-                    document.getElementById('tv-next-2').innerText = nextQs[1] ? nextQs[1].queueNumber : '';
-                    document.getElementById('tv-next-3').innerText = nextQs[2] ? nextQs[2].queueNumber : '';
+                    const mainDisplay = activeQs.length > 0 ? activeQs[0] : null;
+                    if (mainDisplay) {
+                        document.getElementById('tv-serving').innerText = mainDisplay.queueNumber;
+                        document.getElementById('tv-main-label').innerText = mainDisplay.status === "CALLED" ? "PLEASE PROCEED" : "NOW SERVING";
+                    } else {
+                        document.getElementById('tv-serving').innerText = "--";
+                        document.getElementById('tv-main-label').innerText = "NOW SERVING";
+                    }
+                    
+                    // 2. Senarai Giliran Menunggu Seterusnya
+                    const waitingQs = qs.filter(q => q.status === "WAITING").sort((a, b) => (a.queueSequence || 0) - (b.queueSequence || 0));
+                    document.getElementById('tv-next-1').innerText = waitingQs[0] ? waitingQs[0].queueNumber : '--';
+                    document.getElementById('tv-next-2').innerText = waitingQs[1] ? waitingQs[1].queueNumber : '';
+                    document.getElementById('tv-next-3').innerText = waitingQs[2] ? waitingQs[2].queueNumber : '';
 
-                    // Semak jika ada nombor BARU yang dipanggil (CALLED)
-                    const currentlyCalled = qs.filter(q => q.status === "CALLED");
-                    if (currentlyCalled.length > 0) {
-                        const activeCall = currentlyCalled[0];
-                        // Jika ID ini lain dari yang terakhir dipanggil, mainkan bunyi
+                    // 3. Semak jika ada nombor BARU yang dipanggil (CALLED) untuk Audio
+                    const currentlyCalledList = qs.filter(q => q.status === "CALLED").sort((a,b) => {
+                        const timeA = a.calledAt?.toMillis ? a.calledAt.toMillis() : 0;
+                        const timeB = b.calledAt?.toMillis ? b.calledAt.toMillis() : 0;
+                        return timeB - timeA;
+                    });
+
+                    if (currentlyCalledList.length > 0) {
+                        const activeCall = currentlyCalledList[0];
                         if (this.lastCalledId !== activeCall.id) {
                             this.lastCalledId = activeCall.id;
                             this.playAnnouncement(activeCall.queueNumber);
+                            
+                            // Visual Blink pada skrin TV
+                            const box = document.getElementById('tv-serving-box');
+                            if (box) {
+                                box.classList.remove('bg-primary', 'bg-opacity-20');
+                                box.classList.add('bg-green-600', 'animate-pulse', 'bg-opacity-50');
+                                setTimeout(() => {
+                                    box.classList.add('bg-primary', 'bg-opacity-20');
+                                    box.classList.remove('bg-green-600', 'animate-pulse', 'bg-opacity-50');
+                                }, 6000);
+                            }
                         }
                     }
                 }, (err) => {
                     console.error("Firestore TV Error:", err);
+                    // Auto-recover jika TV terputus sambungan secara senyap
+                    setTimeout(() => window.location.reload(), 10000);
                 });
             },
 
