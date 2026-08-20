@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Portal - Barbershop</title>
+    <title>Admin - The Barber Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -11,9 +11,11 @@
             theme: {
                 extend: {
                     colors: {
-                        darkblue: '#111111', // Black/Dark Grey from logo background
-                        primary: '#d6a033', // Mustard Gold from logo text
-                        secondary: '#f7d788' // Lighter gold for highlights
+                        dark: '#000000',      // Solid Black
+                        darker: '#111111',    // Slightly off-black for contrast
+                        gold: '#d9a05b',      // Logo gold color
+                        goldhover: '#c68e4a', // Darker gold for hover
+                        light: '#f8f9fa'
                     }
                 }
             }
@@ -21,307 +23,301 @@
     </script>
     <style>
         .hidden-view { display: none !important; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d9a05b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c68e4a; }
+        
+        /* TV Display Styles */
+        .tv-mode { background-color: #000000; color: white; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .tv-header { background-color: #111111; border-bottom: 4px solid #d9a05b; padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center; }
+        .tv-body { flex-grow: 1; display: flex; padding: 2rem; gap: 2rem; }
+        .tv-card { background: #111111; border: 1px solid #333; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(217, 160, 91, 0.1); }
+        .tv-number { font-size: 12rem; font-weight: 900; line-height: 1; color: #d9a05b; text-shadow: 0 0 40px rgba(217, 160, 91, 0.3); }
+        .flash-green { animation: flashGreen 2s ease-in-out; }
+        @keyframes flashGreen { 0%, 100% { background-color: #111111; } 50% { background-color: rgba(34, 197, 94, 0.2); border-color: #22c55e; box-shadow: 0 0 50px rgba(34, 197, 94, 0.5); } }
     </style>
 </head>
-<body class="bg-gray-100 flex h-screen overflow-hidden text-sm">
+<body class="flex h-screen overflow-hidden text-gray-800">
 
-    <!-- TV Display View (Public, No Login) -->
-    <div id="view-tv" class="hidden-view absolute inset-0 z-50 bg-gradient-to-br from-slate-900 to-black text-white flex flex-col overflow-hidden h-screen w-screen">
-        
-        <!-- Butang Start untuk Benarkan Bunyi (Browser Policy) -->
-        <div id="tv-start-overlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
-            <h2 class="text-3xl text-gray-300 mb-8 font-light">Paparan TV Bersedia</h2>
-            <button onclick="adminApp.startTV()" class="bg-primary text-black text-4xl font-bold py-8 px-16 rounded-3xl shadow-[0_0_40px_rgba(214,160,51,0.5)] hover:bg-secondary hover:scale-105 transition-all border-4 border-secondary cursor-pointer">
-                <i class="fas fa-play mr-4"></i> MULA PAPARAN TV
-            </button>
-            <p class="text-gray-400 mt-8 max-w-lg text-center text-lg">Klik butang di atas untuk membenarkan sistem web ke mod skrin penuh dan memainkan bunyi loceng/suara.</p>
-        </div>
-
-        <!-- TV Header -->
-        <header class="w-full p-8 flex justify-between items-center border-b border-gray-800 bg-black/30">
-            <h1 class="text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary to-white drop-shadow-lg" id="tv-shopname">BARBERSHOP</h1>
-            <div class="text-4xl font-mono text-primary font-bold tracking-wider" id="tv-clock">00:00:00</div>
-        </header>
-
-        <!-- TV Main Content -->
-        <div class="flex-grow flex w-full">
-            <!-- Left: Now Serving -->
-            <div class="w-3/5 flex flex-col items-center justify-center p-12 border-r border-gray-800 relative">
-                <div id="tv-serving-box" class="w-full aspect-video bg-gradient-to-b from-darkblue/40 to-transparent border border-primary/30 rounded-[3rem] flex flex-col items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(214,160,51,0.2)]">
-                    <h2 class="text-4xl font-semibold text-primary uppercase tracking-widest mb-6" id="tv-main-label">Now Serving</h2>
-                    <div class="text-[14rem] leading-none font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] tracking-tighter" id="tv-serving">--</div>
-                </div>
-            </div>
-            
-            <!-- Right: Next in Line -->
-            <div class="w-2/5 flex flex-col bg-black/20">
-                <div class="p-8 border-b border-gray-800 bg-gray-900/50">
-                    <h2 class="text-3xl font-bold text-gray-400 uppercase tracking-wider text-center"><i class="fas fa-list-ul mr-3"></i>Next In Line</h2>
-                </div>
-                <div class="flex-grow flex flex-col justify-center p-12 space-y-8">
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 flex items-center justify-between shadow-inner">
-                        <span class="text-2xl text-gray-400 font-bold">1st</span>
-                        <span class="text-7xl font-bold text-primary" id="tv-next-1">--</span>
-                    </div>
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
-                        <span class="text-xl text-gray-500 font-bold">2nd</span>
-                        <span class="text-5xl font-bold text-gray-300" id="tv-next-2">--</span>
-                    </div>
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
-                        <span class="text-xl text-gray-500 font-bold">3rd</span>
-                        <span class="text-5xl font-bold text-gray-300" id="tv-next-3">--</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- TV Footer -->
-        <footer class="w-full py-4 bg-darkblue border-t border-primary/50 text-center shadow-lg z-10">
-            <p class="text-2xl font-semibold text-primary tracking-wide">Sila bersedia apabila nombor giliran anda dipanggil. Terima kasih!</p>
-        </footer>
-    </div>
-
-    <!-- Login View -->
-    <div id="view-login" class="hidden-view absolute inset-0 z-40 bg-gray-100 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200">
-            <div class="text-center mb-6">
-                <div class="bg-darkblue text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-user-shield text-2xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-darkblue">Owner Portal</h2>
-                <p class="text-gray-500 text-sm">Please sign in to continue</p>
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="fixed inset-0 bg-dark z-50 flex items-center justify-center">
+        <div class="bg-darker p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gold/30">
+            <div class="text-center mb-8">
+                <i class="fas fa-cut text-4xl text-gold mb-3"></i>
+                <h1 class="text-2xl font-bold text-white tracking-wider">THE BARBER SHOP</h1>
+                <p class="text-gold text-sm mt-1">OWNER PORTAL</p>
             </div>
             <form onsubmit="adminApp.login(event)">
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                    <input type="email" id="login-email" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                    <label class="block text-gray-400 text-sm font-bold mb-2">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-3 rounded-lg bg-dark text-white border border-gray-700 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold">
                 </div>
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="login-pass" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                    <label class="block text-gray-400 text-sm font-bold mb-2">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-3 rounded-lg bg-dark text-white border border-gray-700 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold">
                 </div>
-                <p id="login-error" class="text-red-500 text-xs font-bold mb-4 hidden"></p>
-                <button type="submit" class="w-full bg-darkblue text-primary font-bold py-3 px-4 rounded hover:bg-black transition-colors flex justify-center items-center">
-                    <span id="login-btn-text">SIGN IN</span>
-                    <i id="login-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
-                </button>
+                <p id="login-error" class="text-red-500 text-sm mb-4 hidden"></p>
+                <button type="submit" class="w-full bg-gold hover:bg-goldhover text-dark font-bold py-3 rounded-lg transition-colors">LOGIN</button>
             </form>
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="hidden-view w-64 bg-darkblue text-white flex-shrink-0 flex flex-col h-full transition-all duration-300 z-20 shadow-xl relative">
-        <div class="p-6 flex items-center justify-between border-b border-slate-700">
-            <h1 class="text-xl font-black tracking-widest truncate"><i class="fas fa-cut mr-2"></i> ADMIN</h1>
-        </div>
+    <!-- APP VIEW -->
+    <div id="app-view" class="hidden-view flex w-full h-full">
         
-        <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4 px-3">Management</p>
-            <a href="#queue" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="queue"><i class="fas fa-users w-6"></i> Live Queue</a>
-            <a href="#bookings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="bookings"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
-            <a href="#customers" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="customers"><i class="fas fa-address-book w-6"></i> Customers</a>
-            <a href="#settings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="settings"><i class="fas fa-cog w-6"></i> Settings</a>
+        <!-- Sidebar -->
+        <aside class="w-64 bg-dark text-white flex flex-col shadow-2xl z-20 border-r border-gray-800">
+            <div class="p-6 text-center border-b border-gray-800">
+                <h2 class="text-2xl font-black text-gold tracking-wider">THE BARBER</h2>
+                <p class="text-xs text-gray-400 tracking-widest mt-1">ADMIN PORTAL</p>
+            </div>
             
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-8 px-3">Displays</p>
-            <a href="#tv" target="_blank" class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-gray-400 border border-slate-700"><i class="fas fa-tv w-6"></i> Open TV Display</a>
-        </nav>
-
-        <div class="p-4 border-t border-slate-700">
-            <div class="flex items-center px-4 py-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center mr-3">
-                    <i class="fas fa-user text-sm"></i>
+            <nav class="flex-grow p-4 space-y-2">
+                <a href="#dashboard" class="nav-link block px-4 py-3 rounded-lg text-gray-300 hover:bg-darker hover:text-gold transition-colors"><i class="fas fa-chart-line w-6"></i> Dashboard</a>
+                <a href="#queue" class="nav-link block px-4 py-3 rounded-lg text-gray-300 hover:bg-darker hover:text-gold transition-colors"><i class="fas fa-users w-6"></i> Live Queue</a>
+                <a href="#bookings" class="nav-link block px-4 py-3 rounded-lg text-gray-300 hover:bg-darker hover:text-gold transition-colors"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
+                <a href="#customers" class="nav-link block px-4 py-3 rounded-lg text-gray-300 hover:bg-darker hover:text-gold transition-colors"><i class="fas fa-address-book w-6"></i> Customers</a>
+                <a href="#settings" class="nav-link block px-4 py-3 rounded-lg text-gray-300 hover:bg-darker hover:text-gold transition-colors"><i class="fas fa-cog w-6"></i> Settings</a>
+                
+                <div class="pt-4 mt-4 border-t border-gray-800">
+                    <a href="#tv" target="_blank" class="block px-4 py-3 rounded-lg text-gold bg-darker hover:bg-gold hover:text-dark border border-gold/30 font-bold transition-all shadow-lg"><i class="fas fa-tv w-6"></i> Open TV Display</a>
                 </div>
-                <div class="text-xs">
-                    <p class="font-bold truncate w-32" id="user-email-display">admin@barber</p>
-                    <p class="text-green-400">Online</p>
-                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-gray-800">
+                <button onclick="adminApp.logout()" class="w-full bg-red-900/50 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors font-semibold"><i class="fas fa-sign-out-alt mr-2"></i> LOGOUT</button>
             </div>
-            <button onclick="adminApp.logout()" class="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-lg transition-colors text-sm font-semibold">
-                <i class="fas fa-sign-out-alt w-6"></i> Sign Out
-            </button>
-        </div>
-    </aside>
+        </aside>
 
-    <!-- Main Content -->
-    <main id="main-content" class="hidden-view flex-grow flex flex-col h-full bg-slate-50 relative overflow-hidden w-full">
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200 p-4 lg:p-6 flex justify-between items-center z-10 shadow-sm shrink-0">
-            <div class="flex items-center">
-                <h2 class="text-xl lg:text-2xl font-bold text-gray-800" id="header-title">Dashboard</h2>
-            </div>
-            <div class="text-sm font-semibold text-gray-500 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
-                <i class="far fa-clock mr-2"></i><span id="sys-clock">--:--</span>
-            </div>
-        </header>
-
-        <!-- Dynamic Sections -->
-        <div class="p-4 lg:p-8 overflow-y-auto flex-grow w-full">
-
-            <!-- Live Queue -->
-            <section id="sec-queue" class="hidden-view">
-                <!-- Action Bar -->
-                <div class="flex flex-col md:flex-row justify-between mb-6 gap-4">
-                    <div class="flex gap-2">
-                        <button onclick="adminApp.callNext()" class="bg-primary text-black px-6 py-3 rounded-lg font-bold shadow-md hover:bg-secondary transition-all flex items-center justify-center min-w-[150px]">
-                            <i class="fas fa-bullhorn mr-2"></i> CALL NEXT
-                        </button>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-gray-500 font-semibold">Date:</span>
-                        <input type="date" id="queue-date-filter" class="border border-gray-300 rounded-lg px-4 py-2 font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-primary" onchange="adminApp.loadQueue()">
-                    </div>
+        <!-- Main Content Area -->
+        <main class="flex-grow flex flex-col bg-gray-50 h-full overflow-hidden relative">
+            
+            <!-- Topbar -->
+            <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center z-10 border-b border-gray-200">
+                <h2 id="page-title" class="text-2xl font-bold text-dark">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <div id="sys-clock" class="text-gray-500 font-mono font-bold bg-gray-100 px-4 py-2 rounded-lg">--:--</div>
                 </div>
+            </header>
 
-                <!-- Status Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Waiting</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-waiting">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl"><i class="fas fa-users"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Serving / Called</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-serving">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl"><i class="fas fa-cut"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Completed Today</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-completed">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl"><i class="fas fa-check"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total in System</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-total">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl"><i class="fas fa-chart-line"></i></div>
-                    </div>
-                </div>
+            <!-- Dynamic Sections Scrollable Area -->
+            <div class="p-6 lg:p-8 overflow-y-auto flex-grow w-full">
 
-                <!-- Queue Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                <!-- 1. DASHBOARD -->
+                <section id="sec-dashboard" class="hidden-view space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-gold">
+                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Waiting in Queue</p>
+                            <h3 class="text-4xl font-black text-dark" id="dash-waiting">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Completed Today</p>
+                            <h3 class="text-4xl font-black text-dark" id="dash-completed">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-purple-500">
+                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Bookings Today</p>
+                            <h3 class="text-4xl font-black text-dark" id="dash-bookings">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                            <p class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Now Serving</p>
+                            <h3 class="text-3xl font-black text-dark" id="dash-serving">--</h3>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. LIVE QUEUE -->
+                <section id="sec-queue" class="hidden-view">
+                    <!-- Action & Filter Bar -->
+                    <div class="flex flex-col md:flex-row justify-between mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex gap-2">
+                            <button onclick="adminApp.callNext()" class="bg-gold text-dark px-8 py-3 rounded-xl font-bold shadow-md hover:bg-goldhover transition-all flex items-center justify-center min-w-[150px] text-lg">
+                                <i class="fas fa-bullhorn mr-2"></i> CALL NEXT
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">View As:</span>
+                                <select id="queue-barber-filter" class="border-2 border-gray-200 rounded-lg px-4 py-2 font-bold text-dark outline-none focus:border-gold bg-gray-50" onchange="adminApp.loadQueue()">
+                                    <option value="ALL">Admin (All Barbers)</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2 border-l-2 border-gray-200 pl-4">
+                                <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">Date:</span>
+                                <input type="date" id="queue-date-filter" class="border-2 border-gray-200 rounded-lg px-4 py-2 font-bold text-dark outline-none focus:border-gold bg-gray-50" onchange="adminApp.loadQueue()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Queue Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold">No.</th>
-                                    <th class="p-4 border-b font-bold">Customer</th>
-                                    <th class="p-4 border-b font-bold">Service / Barber</th>
-                                    <th class="p-4 border-b font-bold">Status</th>
-                                    <th class="p-4 border-b font-bold text-right">Actions</th>
+                                <tr class="bg-dark text-gold text-sm uppercase tracking-wider">
+                                    <th class="p-4 font-bold">No.</th>
+                                    <th class="p-4 font-bold">Customer</th>
+                                    <th class="p-4 font-bold">Service & Barber</th>
+                                    <th class="p-4 font-bold">Status</th>
+                                    <th class="p-4 font-bold text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="queue-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading queue...</td></tr>
+                                <!-- Populated by JS -->
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Bookings -->
-            <section id="sec-bookings" class="hidden-view">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-700">Manage Appointments</h3>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-gray-500 font-semibold">Filter Date:</span>
-                        <input type="date" id="book-date-filter" class="border border-gray-300 rounded-lg px-4 py-2 font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-primary" onchange="adminApp.loadBookings()">
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold">ID / Time</th>
-                                    <th class="p-4 border-b font-bold">Customer</th>
-                                    <th class="p-4 border-b font-bold">Service / Barber</th>
-                                    <th class="p-4 border-b font-bold">Status</th>
-                                    <th class="p-4 border-b font-bold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookings-table-body" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Customers -->
-            <section id="sec-customers" class="hidden-view">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50">
-                        <h3 class="font-bold text-gray-700 text-lg"><i class="fas fa-address-book text-primary mr-2"></i> Customer Directory</h3>
-                        <div class="relative w-full sm:w-auto">
-                            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                            <input type="text" id="cust-search" placeholder="Search name or phone..." class="border border-gray-300 pl-11 pr-4 py-2.5 rounded-lg text-sm w-full sm:w-80 focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all" onkeyup="adminApp.filterCustomers()">
+                <!-- 3. BOOKINGS -->
+                <section id="sec-bookings" class="hidden-view">
+                    <div class="flex flex-col md:flex-row justify-between mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-bold text-dark flex items-center"><i class="fas fa-calendar-check mr-3 text-gold"></i> Manage Appointments</h3>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">Barber:</span>
+                                <select id="book-barber-filter" class="border-2 border-gray-200 rounded-lg px-4 py-2 font-bold text-dark outline-none focus:border-gold bg-gray-50" onchange="adminApp.loadBookings()">
+                                    <option value="ALL">All Barbers</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2 border-l-2 border-gray-200 pl-4">
+                                <span class="text-gray-500 font-bold text-sm uppercase tracking-wide">Date:</span>
+                                <input type="date" id="book-date-filter" class="border-2 border-gray-200 rounded-lg px-4 py-2 font-bold text-dark outline-none focus:border-gold bg-gray-50" onchange="adminApp.loadBookings()">
+                            </div>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-full">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold w-1/3">Customer Name</th>
-                                    <th class="p-4 border-b font-bold w-1/4">Phone Number</th>
-                                    <th class="p-4 border-b font-bold text-center w-1/6">Total Visits</th>
-                                    <th class="p-4 border-b font-bold w-1/4">Last Visit Date</th>
+                                <tr class="bg-dark text-gold text-sm uppercase tracking-wider">
+                                    <th class="p-4 font-bold">Time</th>
+                                    <th class="p-4 font-bold">Customer</th>
+                                    <th class="p-4 font-bold">Service & Barber</th>
+                                    <th class="p-4 font-bold">Status</th>
+                                    <th class="p-4 font-bold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-table-body" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. CUSTOMERS DATABASE -->
+                <section id="sec-customers" class="hidden-view">
+                    <div class="flex flex-col md:flex-row justify-between mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-bold text-dark flex items-center"><i class="fas fa-address-book mr-3 text-gold"></i> Client Database</h3>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="cust-search" placeholder="Search phone or name..." class="border-2 border-gray-200 rounded-lg pl-10 pr-4 py-2 font-bold text-dark outline-none focus:border-gold w-64 bg-gray-50" onkeyup="adminApp.filterCustomers()">
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-dark text-gold text-sm uppercase tracking-wider">
+                                    <th class="p-4 font-bold">Customer Name</th>
+                                    <th class="p-4 font-bold">Phone Number</th>
+                                    <th class="p-4 font-bold text-center">Total Visits</th>
+                                    <th class="p-4 font-bold">Last Visit Date</th>
                                 </tr>
                             </thead>
                             <tbody id="customers-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="4" class="p-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>
+                                <!-- Populated by JS -->
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Settings -->
-            <section id="sec-settings" class="hidden-view">
-                <div class="max-w-2xl bg-white p-6 lg:p-8 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-xl font-bold text-gray-800 border-b border-gray-100 pb-4 mb-6"><i class="fas fa-store mr-2 text-primary"></i> General Settings</h3>
-                    <form id="form-settings" onsubmit="adminApp.saveSettings(event)">
-                        <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Shop Name</label>
-                            <input type="text" id="set-shopname" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
+                <!-- 5. SETTINGS -->
+                <section id="sec-settings" class="hidden-view bg-white p-8 rounded-2xl shadow-sm border border-gray-200 max-w-2xl">
+                    <h3 class="text-2xl font-bold text-dark mb-6 border-b pb-4"><i class="fas fa-cog mr-2 text-gold"></i> System Settings</h3>
+                    <form id="form-settings" onsubmit="adminApp.saveSettings(event)" class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2 uppercase tracking-wide">Shop Name</label>
+                            <input type="text" id="set-shop" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-gold outline-none font-bold text-dark">
                         </div>
-                        <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Queue Prefix (e.g. A)</label>
-                                <input type="text" id="set-prefix" required maxlength="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
+                                <label class="block text-gray-700 text-sm font-bold mb-2 uppercase tracking-wide">Queue Prefix (e.g., A)</label>
+                                <input type="text" id="set-prefix" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-gold outline-none font-bold text-dark uppercase" maxlength="2">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Avg Duration (mins)</label>
-                                <input type="number" id="set-duration" required min="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
+                                <label class="block text-gray-700 text-sm font-bold mb-2 uppercase tracking-wide">Avg Duration (Mins)</label>
+                                <input type="number" id="set-duration" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-gold outline-none font-bold text-dark">
                             </div>
                         </div>
-                        
-                        <div class="flex items-center justify-between border-t border-gray-100 pt-6">
-                            <p id="set-msg" class="text-green-600 font-bold hidden"><i class="fas fa-check-circle mr-1"></i> Saved successfully</p>
-                            <button type="submit" class="bg-primary text-black font-bold py-3 px-8 rounded-lg shadow hover:bg-secondary transition-colors ml-auto">
-                                <i class="fas fa-save mr-2"></i> SAVE SETTINGS
-                            </button>
-                        </div>
+                        <button type="submit" class="bg-dark hover:bg-darker text-gold font-bold py-3 px-8 rounded-xl shadow-lg transition-colors border border-gold/30">SAVE SETTINGS</button>
                     </form>
-                </div>
-            </section>
+                </section>
 
+            </div>
+        </main>
+    </div>
+
+    <!-- TV DISPLAY VIEW (FULL SCREEN) -->
+    <div id="tv-view" class="hidden-view tv-mode relative">
+        
+        <!-- Pre-start Screen for Audio Permission -->
+        <div id="tv-start-screen" class="absolute inset-0 bg-darker z-50 flex flex-col items-center justify-center">
+            <i class="fas fa-tv text-6xl text-gold mb-6"></i>
+            <h1 class="text-3xl font-bold text-white mb-8">TV DISPLAY READY</h1>
+            <p class="text-gray-400 mb-8 max-w-md text-center">Click the button below to allow audio (chime & voice over) and enter fullscreen mode.</p>
+            <button onclick="adminApp.startTvAudio()" class="bg-gold text-dark px-10 py-5 rounded-full font-black text-2xl shadow-[0_0_30px_rgba(217,160,91,0.5)] hover:scale-105 transition-transform flex items-center">
+                <i class="fas fa-play mr-4"></i> START TV DISPLAY
+            </button>
         </div>
-    </main>
+
+        <!-- TV Content (Hidden until started) -->
+        <div id="tv-main-content" class="hidden h-full flex flex-col">
+            <header class="tv-header">
+                <div>
+                    <h1 class="text-4xl font-black tracking-widest text-white" id="tv-shop-name">THE BARBER SHOP</h1>
+                    <p class="text-gold tracking-widest mt-1 font-bold">QUEUE STATUS</p>
+                </div>
+                <div id="tv-clock" class="text-5xl font-bold text-white font-mono tracking-wider">00:00</div>
+            </header>
+
+            <div class="tv-body">
+                <!-- Left: Current Serving -->
+                <div class="w-2/3 flex flex-col gap-6">
+                    <div id="tv-card-main" class="tv-card flex-grow flex flex-col items-center justify-center relative overflow-hidden">
+                        <div class="absolute top-0 w-full bg-gold text-dark text-center py-2 font-black tracking-widest text-xl uppercase">Now Serving</div>
+                        <h2 id="tv-current-number" class="tv-number mt-8">--</h2>
+                        <div class="mt-8 text-center border-t border-gray-800 pt-6 w-full px-12">
+                            <p class="text-gray-400 text-lg uppercase tracking-widest mb-2 font-bold">Please proceed to</p>
+                            <p id="tv-current-barber" class="text-4xl font-bold text-white capitalize">Counter</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Upcoming -->
+                <div class="w-1/3 flex flex-col gap-6">
+                    <div class="tv-card flex-grow">
+                        <h3 class="text-gold text-xl font-black uppercase tracking-widest border-b border-gray-800 pb-4 mb-6">Next in Line</h3>
+                        <div id="tv-waiting-list" class="space-y-4">
+                            <!-- Populated by JS -->
+                            <div class="text-center text-gray-600 mt-10">No upcoming queue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-darker py-3 text-center border-t border-gray-900 text-gray-500 font-bold tracking-widest text-sm">
+                PLEASE WAIT FOR YOUR NUMBER TO BE CALLED
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase Logic -->
     <script type="module">
         // ================================
-        // FIREBASE CONFIGURATION
-        // Gantikan nilai ini dengan keys dari Firebase Project anda
+        // FIREBASE CONFIGURATION (ADMIN)
+        // REPLACE THESE WITH YOUR KEYS!
         // ================================
         const firebaseConfig = {
             apiKey: "AIzaSyBBXZkkgYlQgEvVwNcVeYJpBfcaFNo89j0",
@@ -342,95 +338,92 @@
 
         const AdminApp = {
             unsubQueue: null,
-            lastCalledId: null,
+            unsubTV: null,
+            barbersList: [],
+            tvAudioAllowed: false,
+            tvLastCalledNumber: null,
+            customerList: [],
 
             init() {
                 setInterval(() => {
-                    document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const now = new Date();
+                    document.getElementById('sys-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    if(document.getElementById('tv-clock')) {
+                        document.getElementById('tv-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
                 }, 1000);
 
-                // Handle routing #hash
-                window.addEventListener('hashchange', () => this.handleRoute());
+                // Watch Hash
+                window.addEventListener('hashchange', () => this.handleRouting());
                 
-                // Cek jika #tv diakses terus
-                if (window.location.hash === '#tv') {
+                // Watch Auth
+                onAuthStateChanged(auth, (user) => {
+                    const hash = window.location.hash.substring(1);
+                    if (hash === 'tv') {
+                        // TV doesn't need strict login if just viewing, but logic runs
+                        this.handleRouting();
+                    } else if (user) {
+                        document.getElementById('login-view').classList.add('hidden-view');
+                        document.getElementById('app-view').classList.remove('hidden-view');
+                        this.loadMasterData().then(() => {
+                            if(!hash) window.location.hash = 'dashboard';
+                            this.handleRouting();
+                        });
+                    } else {
+                        document.getElementById('login-view').classList.remove('hidden-view');
+                        document.getElementById('app-view').classList.add('hidden-view');
+                    }
+                });
+            },
+
+            handleRouting() {
+                const hash = window.location.hash.substring(1) || 'dashboard';
+                
+                // Hide all main sections
+                document.getElementById('app-view').classList.add('hidden-view');
+                document.getElementById('tv-view').classList.add('hidden-view');
+                document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden-view'));
+                
+                // Nav highlighting
+                document.querySelectorAll('.nav-link').forEach(l => {
+                    l.classList.remove('bg-darker', 'text-gold', 'border-l-4', 'border-gold');
+                    l.classList.add('text-gray-300');
+                    if(l.getAttribute('href') === `#${hash}`) {
+                        l.classList.remove('text-gray-300');
+                        l.classList.add('bg-darker', 'text-gold', 'border-l-4', 'border-gold');
+                    }
+                });
+
+                if (hash === 'tv') {
+                    document.getElementById('tv-view').classList.remove('hidden-view');
                     this.initTV();
-                    return; // Berhenti laksanakan kod login
+                    return; // Skip normal app rendering
                 }
 
-                // Auth Listener
-                onAuthStateChanged(auth, user => {
-                    if (user) {
-                        document.getElementById('user-email-display').innerText = user.email;
-                        document.getElementById('view-login').classList.add('hidden-view');
-                        document.getElementById('sidebar').classList.remove('hidden-view');
-                        document.getElementById('main-content').classList.remove('hidden-view');
-                        if(!window.location.hash) window.location.hash = '#queue';
-                        else this.handleRoute();
-                    } else {
-                        document.getElementById('view-login').classList.remove('hidden-view');
-                        document.getElementById('sidebar').classList.add('hidden-view');
-                        document.getElementById('main-content').classList.add('hidden-view');
-                    }
-                });
-            },
+                document.getElementById('app-view').classList.remove('hidden-view');
+                document.getElementById(`sec-${hash}`).classList.remove('hidden-view');
 
-            async login(e) {
-                e.preventDefault();
-                const em = document.getElementById('login-email').value;
-                const pw = document.getElementById('login-pass').value;
-                const err = document.getElementById('login-error');
-                const btnText = document.getElementById('login-btn-text');
-                const spinner = document.getElementById('login-spinner');
-                
-                err.classList.add('hidden');
-                btnText.innerText = "SIGNING IN...";
-                spinner.classList.remove('hidden');
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'queue': 'Live Queue Management',
+                    'bookings': 'Appointments',
+                    'customers': 'Client Database',
+                    'settings': 'System Settings'
+                };
+                document.getElementById('page-title').innerText = titles[hash] || 'Admin';
 
-                try {
-                    await signInWithEmailAndPassword(auth, em, pw);
-                } catch(error) {
-                    err.innerText = "Invalid credentials. Please try again.";
-                    err.classList.remove('hidden');
-                } finally {
-                    btnText.innerText = "SIGN IN";
-                    spinner.classList.add('hidden');
-                }
-            },
-
-            async logout() {
-                await signOut(auth);
-            },
-
-            handleRoute() {
-                const hash = window.location.hash.substring(1) || 'queue';
-                if (hash === 'tv') return;
-
-                document.querySelectorAll('main > div > section').forEach(el => el.classList.add('hidden-view'));
-                
-                const targetSec = document.getElementById(`sec-${hash}`);
-                if(targetSec) targetSec.classList.remove('hidden-view');
-
-                document.querySelectorAll('.nav-link').forEach(el => {
-                    if(el.dataset.target === hash) {
-                        el.classList.add('bg-primary', 'text-black');
-                        el.classList.remove('text-gray-300', 'hover:text-white');
-                    } else {
-                        el.classList.remove('bg-primary', 'text-black');
-                        el.classList.add('text-gray-300', 'hover:text-white');
-                    }
-                });
-
-                document.getElementById('header-title').innerText = hash.charAt(0).toUpperCase() + hash.slice(1);
-
-                if (hash === 'queue') {
+                // Load section data
+                const today = this.getTodayStr();
+                if (hash === 'dashboard') {
+                    this.loadDashboard();
+                } else if (hash === 'queue') {
                     if(!document.getElementById('queue-date-filter').value) {
-                        document.getElementById('queue-date-filter').value = this.getTodayStr();
+                        document.getElementById('queue-date-filter').value = today;
                     }
                     this.loadQueue();
                 } else if (hash === 'bookings') {
                     if(!document.getElementById('book-date-filter').value) {
-                        document.getElementById('book-date-filter').value = this.getTodayStr();
+                        document.getElementById('book-date-filter').value = today;
                     }
                     this.loadBookings();
                 } else if (hash === 'settings') {
@@ -440,15 +433,56 @@
                 }
             },
 
+            async loadMasterData() {
+                try {
+                    const bSnap = await getDocs(query(collection(db, "barbers"), where("active", "==", true)));
+                    this.barbersList = bSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                    
+                    let optionsHtml = '<option value="ALL">Admin (All Barbers)</option>';
+                    this.barbersList.forEach(b => {
+                        optionsHtml += `<option value="${b.id}">${b.name}</option>`;
+                    });
+                    
+                    document.getElementById('queue-barber-filter').innerHTML = optionsHtml;
+                    document.getElementById('book-barber-filter').innerHTML = optionsHtml;
+                } catch (e) {
+                    console.error("Error loading barbers:", e);
+                }
+            },
+
             getTodayStr() { 
                 const d = new Date();
                 d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                return d.toISOString().split('T')[0];
+                return d.toISOString().split('T')[0]; 
             },
 
-            // --- QUEUE MANAGEMENT ---
+            async loadDashboard() {
+                const today = this.getTodayStr();
+                const qSnap = await getDocs(query(collection(db, "queues"), where("businessDate", "==", today)));
+                let w=0, c=0, serving="--";
+                
+                let docs = qSnap.docs.map(d => d.data());
+                docs.sort((a,b) => b.updatedAt - a.updatedAt); // Most recent first
+
+                docs.forEach(q => {
+                    if(q.status === 'WAITING') w++;
+                    if(q.status === 'COMPLETED') c++;
+                    if((q.status === 'SERVING' || q.status === 'CALLED') && serving === "--") {
+                        serving = q.queueNumber; // show latest serving
+                    }
+                });
+
+                const bSnap = await getDocs(query(collection(db, "bookings"), where("date", "==", today)));
+                
+                document.getElementById('dash-waiting').innerText = w;
+                document.getElementById('dash-completed').innerText = c;
+                document.getElementById('dash-bookings').innerText = bSnap.size;
+                document.getElementById('dash-serving').innerText = serving;
+            },
+
             loadQueue() {
                 const dateFilter = document.getElementById('queue-date-filter').value;
+                const barberFilter = document.getElementById('queue-barber-filter').value;
                 if(!dateFilter) return;
 
                 if (this.unsubQueue) this.unsubQueue();
@@ -457,344 +491,365 @@
                 
                 this.unsubQueue = onSnapshot(q, (snapshot) => {
                     let html = '';
-                    let w=0, s=0, c=0, t=0;
+                    let docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     
-                    // Sort locally since we don't have compound index setup yet
-                    const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                    // Sort by queue sequence (client side)
                     docs.sort((a, b) => a.queueSequence - b.queueSequence);
 
-                    docs.forEach(data => {
-                        t++;
-                        if(data.status === 'WAITING') w++;
-                        else if(data.status === 'CALLED' || data.status === 'SERVING') s++;
-                        else if(data.status === 'COMPLETED') c++;
+                    // Filter by selected Barber
+                    docs = docs.filter(data => {
+                        if (barberFilter === 'ALL') return true; 
+                        const isSpecificToMe = data.barberId === barberFilter;
+                        const isAnyBarber = !data.barberId || data.barberId === "" || data.barberId === "null";
+                        return isSpecificToMe || isAnyBarber;
+                    });
 
+                    docs.forEach(data => {
                         let badge = 'bg-yellow-100 text-yellow-800';
-                        if(data.status === 'CALLED') badge = 'bg-primary text-black border border-primary shadow-sm';
+                        if(data.status === 'CALLED') badge = 'bg-blue-100 text-blue-800 border-2 border-blue-400 animate-pulse';
                         else if(data.status === 'SERVING') badge = 'bg-green-100 text-green-800';
-                        else if(data.status === 'COMPLETED' || data.status === 'CANCELLED') badge = 'bg-gray-100 text-gray-600';
+                        else if(data.status === 'COMPLETED' || data.status === 'CANCELLED') badge = 'bg-gray-100 text-gray-500';
 
                         let actions = '';
                         if(data.status === 'WAITING' || data.status === 'CALLED') {
                             actions = `
-                                <button onclick="adminApp.updateQ('${data.id}', 'SERVING')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded shadow-sm mr-1 font-bold transition-colors">SERVE</button>
-                                <button onclick="adminApp.updateQ('${data.id}', 'CANCELLED')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded transition-colors font-bold"><i class="fas fa-times"></i></button>
+                                <button onclick="adminApp.updateQ('${data.id}', 'SERVING')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow-sm mr-2 font-bold transition-colors">SERVE</button>
+                                <button onclick="adminApp.updateQ('${data.id}', 'CANCELLED')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg transition-colors font-bold"><i class="fas fa-times"></i></button>
                             `;
                         } else if (data.status === 'SERVING') {
-                            actions = `<button onclick="adminApp.updateQ('${data.id}', 'COMPLETED')" class="text-xs bg-gray-800 hover:bg-black text-white px-4 py-1.5 rounded shadow-sm font-bold transition-colors">DONE</button>`;
+                            actions = `<button onclick="adminApp.updateQ('${data.id}', 'COMPLETED')" class="text-xs bg-dark hover:bg-darker text-gold px-6 py-2 rounded-lg shadow-sm font-bold transition-colors border border-gold/30">DONE</button>`;
                         }
 
+                        const bgRow = (data.barberId && data.barberId !== "null") ? 'bg-gold/5' : '';
+                        const reqBadge = (data.barberId && data.barberId !== "null") 
+                            ? `<span class="text-gold font-bold"><i class="fas fa-star mr-1"></i>Req: ${data.barberName}</span>` 
+                            : `<span class="text-gray-400"><i class="fas fa-random mr-1"></i>Any Barber</span>`;
+
                         html += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="p-4"><span class="font-black text-lg text-darkblue">${data.queueNumber}</span></td>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors ${bgRow}">
+                                <td class="p-4"><span class="font-black text-2xl text-dark tracking-tighter">${data.queueNumber}</span></td>
                                 <td class="p-4">
-                                    <div class="font-bold text-gray-800">${data.customerName}</div>
-                                    <div class="text-xs text-gray-500 font-mono">${data.phone}</div>
+                                    <div class="font-bold text-gray-800 capitalize text-lg">${data.customerName}</div>
+                                    <div class="text-sm text-gray-500 font-mono">${data.phone}</div>
                                 </td>
                                 <td class="p-4">
-                                    <div class="text-sm font-semibold">${data.serviceName}</div>
-                                    <div class="text-xs text-gray-500">${data.barberName}</div>
+                                    <div class="text-sm font-bold text-gray-800 mb-1">${data.serviceName}</div>
+                                    <div class="text-xs">${reqBadge}</div>
                                 </td>
-                                <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status}</span></td>
+                                <td class="p-4"><span class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${badge}">${data.status}</span></td>
                                 <td class="p-4 text-right">${actions}</td>
                             </tr>
                         `;
                     });
 
-                    document.getElementById('queue-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No queues for this date.</td></tr>`;
-                    document.getElementById('stat-waiting').innerText = w;
-                    document.getElementById('stat-serving').innerText = s;
-                    document.getElementById('stat-completed').innerText = c;
-                    document.getElementById('stat-total').innerText = t;
+                    document.getElementById('queue-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400 font-bold uppercase tracking-wider">No queue for selected view</td></tr>`;
                 });
             },
 
             async updateQ(id, status) {
-                await updateDoc(doc(db, "queues", id), { status, updatedAt: serverTimestamp() });
+                if(!confirm(`Mark as ${status}?`)) return;
+                await updateDoc(doc(db, "queues", id), { 
+                    status, 
+                    updatedAt: serverTimestamp() 
+                });
             },
 
             async callNext() {
                 const dateFilter = document.getElementById('queue-date-filter').value;
-                const qSnap = await getDocs(query(collection(db, "queues"), where("businessDate", "==", dateFilter), where("status", "==", "WAITING")));
+                const barberFilter = document.getElementById('queue-barber-filter').value;
                 
-                if(qSnap.empty) {
-                    alert("No waiting customers in queue.");
+                if (barberFilter === 'ALL') {
+                    alert("Please select YOUR NAME (View As) at the top before pressing CALL NEXT.");
                     return;
                 }
 
-                const docs = qSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                docs.sort((a, b) => a.queueSequence - b.queueSequence);
+                const qSnap = await getDocs(query(collection(db, "queues"), where("businessDate", "==", dateFilter), where("status", "==", "WAITING")));
                 
-                const nextId = docs[0].id;
-                await updateDoc(doc(db, "queues", nextId), { status: 'CALLED', updatedAt: serverTimestamp() });
+                if(qSnap.empty) {
+                    alert("No customers waiting today.");
+                    return;
+                }
+
+                let docs = qSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                
+                // Filter specifically for this barber OR any barber
+                docs = docs.filter(d => {
+                    const isSpecificToMe = d.barberId === barberFilter;
+                    const isAnyBarber = !d.barberId || d.barberId === "" || d.barberId === "null";
+                    return isSpecificToMe || isAnyBarber;
+                });
+
+                if(docs.length === 0) {
+                    alert("No customers waiting for your queue right now.");
+                    return;
+                }
+
+                // Sort by earliest sequence
+                docs.sort((a, b) => a.queueSequence - b.queueSequence);
+                const nextCustomer = docs[0];
+                
+                const barberObj = this.barbersList.find(b => b.id === barberFilter);
+                
+                await updateDoc(doc(db, "queues", nextCustomer.id), { 
+                    status: 'CALLED', 
+                    updatedAt: serverTimestamp(),
+                    handledByBarberId: barberFilter,
+                    handledByBarberName: barberObj ? barberObj.name : 'Barber'
+                });
             },
 
-            // --- BOOKINGS ---
             async loadBookings() {
                 const dateFilter = document.getElementById('book-date-filter').value;
-                document.getElementById('bookings-table-body').innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading bookings...</td></tr>';
+                const barberFilter = document.getElementById('book-barber-filter').value;
+                document.getElementById('bookings-table-body').innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading...</td></tr>';
                 
                 const qSnap = await getDocs(query(collection(db, "bookings"), where("date", "==", dateFilter)));
-                
                 let docs = qSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                
+                if (barberFilter !== 'ALL') {
+                    docs = docs.filter(d => d.barberId === barberFilter);
+                }
+
                 docs.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
                 let html = '';
                 docs.forEach(data => {
-                    let badge = 'bg-green-100 text-green-800';
-                    if(data.status === 'COMPLETED') badge = 'bg-gray-100 text-gray-600';
-                    else if(data.status === 'NO-SHOW') badge = 'bg-red-100 text-red-800';
+                    let badge = 'bg-blue-100 text-blue-800';
+                    if(data.status === 'COMPLETED') badge = 'bg-green-100 text-green-800';
+                    else if(data.status === 'CANCELLED') badge = 'bg-gray-100 text-gray-500';
 
                     let actions = '';
                     if(data.status === 'CONFIRMED') {
                         actions = `
-                            <button onclick="adminApp.updateB('${data.id}', 'COMPLETED')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded shadow-sm mr-1 font-bold">DONE</button>
-                            <button onclick="adminApp.updateB('${data.id}', 'NO-SHOW')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded font-bold">NO-SHOW</button>
+                            <button onclick="adminApp.updateBooking('${data.id}', 'COMPLETED')" class="text-xs bg-dark hover:bg-darker text-gold px-4 py-2 rounded-lg font-bold shadow-sm transition-colors border border-gold/30 mr-1">DONE</button>
+                            <button onclick="adminApp.updateBooking('${data.id}', 'CANCELLED')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg transition-colors font-bold"><i class="fas fa-times"></i></button>
                         `;
                     }
 
                     html += `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td class="p-4"><span class="font-bold text-lg text-dark">${data.startTime}</span></td>
                             <td class="p-4">
-                                <div class="font-bold text-gray-800">${data.startTime}</div>
-                                <div class="text-xs text-gray-400 font-mono">${data.bookingId}</div>
+                                <div class="font-bold text-gray-800 capitalize">${data.customerName}</div>
+                                <div class="text-sm text-gray-500 font-mono">${data.phone}</div>
+                                ${data.notes ? `<div class="text-xs text-gray-400 mt-1 italic">"${data.notes}"</div>` : ''}
                             </td>
                             <td class="p-4">
-                                <div class="font-bold text-gray-800">${data.customerName}</div>
-                                <div class="text-xs text-gray-500 font-mono">${data.phone}</div>
+                                <div class="text-sm font-bold text-gray-800 mb-1">${data.serviceName}</div>
+                                <div class="text-xs text-gold font-bold"><i class="fas fa-cut mr-1"></i>${data.barberName}</div>
                             </td>
-                            <td class="p-4">
-                                <div class="text-sm font-semibold">${data.serviceName}</div>
-                                <div class="text-xs text-gray-500">${data.barberName}</div>
-                            </td>
-                            <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status}</span></td>
+                            <td class="p-4"><span class="px-3 py-1.5 rounded-lg text-xs font-bold uppercase ${badge}">${data.status}</span></td>
                             <td class="p-4 text-right">${actions}</td>
                         </tr>
                     `;
                 });
-
-                document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No bookings for this date.</td></tr>`;
+                document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400 font-bold uppercase tracking-wider">No bookings found</td></tr>`;
             },
 
-            async updateB(id, status) {
-                await updateDoc(doc(db, "bookings", id), { status, updatedAt: serverTimestamp() });
-                this.loadBookings(); // Refresh list
+            async updateBooking(id, status) {
+                if(!confirm(`Update booking status to ${status}?`)) return;
+                await updateDoc(doc(db, "bookings", id), { status });
+                this.loadBookings();
             },
 
-            // --- CUSTOMERS DIRECTORY ---
-            allCustomers: [],
             async loadCustomers() {
+                document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Analyzing records...</td></tr>';
+                
                 try {
-                    document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading customer records...</td></tr>';
-                    
-                    // Fetch all COMPLETED queues and bookings
+                    // Fetch completed queues and bookings to build customer profiles
                     const qSnap = await getDocs(query(collection(db, "queues"), where("status", "==", "COMPLETED")));
                     const bSnap = await getDocs(query(collection(db, "bookings"), where("status", "==", "COMPLETED")));
                     
-                    const customerMap = {};
+                    const clients = {}; // phone: { name, visits, lastVisit }
 
-                    const processRecord = (data, dateField) => {
-                        if (!data.phone || !data.customerName) return;
-                        const phone = data.phone.trim();
-                        const date = data[dateField] || '';
-                        
-                        if (!customerMap[phone]) {
-                            customerMap[phone] = {
-                                name: data.customerName,
-                                phone: phone,
-                                totalVisits: 0,
-                                lastVisit: date
-                            };
+                    const processRecord = (doc, dateField) => {
+                        const d = doc.data();
+                        if(!d.phone) return;
+                        const phone = d.phone.trim();
+                        if(!clients[phone]) {
+                            clients[phone] = { name: d.customerName, phone: phone, visits: 0, lastVisit: '1970-01-01' };
                         }
-                        customerMap[phone].totalVisits++;
-                        if (date > customerMap[phone].lastVisit) {
-                            customerMap[phone].lastVisit = date;
-                            customerMap[phone].name = data.customerName; 
+                        clients[phone].visits++;
+                        if(d[dateField] && d[dateField] > clients[phone].lastVisit) {
+                            clients[phone].lastVisit = d[dateField];
                         }
                     };
 
-                    qSnap.forEach(d => processRecord(d.data(), 'businessDate'));
-                    bSnap.forEach(d => processRecord(d.data(), 'date'));
+                    qSnap.forEach(doc => processRecord(doc, 'businessDate'));
+                    bSnap.forEach(doc => processRecord(doc, 'date'));
 
-                    this.allCustomers = Object.values(customerMap).sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
-                    this.renderCustomers(this.allCustomers);
+                    this.customerList = Object.values(clients).sort((a,b) => b.visits - a.visits); // Sort by most visits
+                    this.renderCustomers(this.customerList);
 
-                } catch (e) {
-                    console.error("Error loading customers:", e);
-                    document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load records. Check connection.</td></tr>';
+                } catch(e) {
+                    console.error("Error loading customers", e);
+                    document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Error loading data.</td></tr>';
                 }
             },
 
             renderCustomers(list) {
-                const html = list.map(c => `
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                        <td class="p-4 font-bold text-darkblue capitalize">${c.name}</td>
-                        <td class="p-4 text-gray-600 font-mono text-sm">${c.phone}</td>
-                        <td class="p-4 text-center">
-                            <span class="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full text-xs border border-blue-200">${c.totalVisits}</span>
-                        </td>
-                        <td class="p-4 text-gray-500 text-sm font-semibold">${c.lastVisit || 'N/A'}</td>
-                    </tr>
-                `).join('');
-                document.getElementById('customers-table-body').innerHTML = html || '<tr><td colspan="4" class="p-8 text-center text-gray-400">No customer records found.</td></tr>';
+                let html = '';
+                list.forEach(c => {
+                    html += `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="p-4 font-bold text-gray-800 capitalize text-lg">${c.name}</td>
+                            <td class="p-4 font-mono text-gray-600">${c.phone}</td>
+                            <td class="p-4 text-center"><span class="bg-gold/20 text-dark font-black px-4 py-1.5 rounded-lg">${c.visits}</span></td>
+                            <td class="p-4 text-gray-500 font-semibold">${c.lastVisit}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('customers-table-body').innerHTML = html || `<tr><td colspan="4" class="p-8 text-center text-gray-400 font-bold">No completed customer records found.</td></tr>`;
             },
 
             filterCustomers() {
                 const term = document.getElementById('cust-search').value.toLowerCase();
-                const filtered = this.allCustomers.filter(c => 
-                    c.name.toLowerCase().includes(term) || c.phone.includes(term)
-                );
+                const filtered = this.customerList.filter(c => c.name.toLowerCase().includes(term) || c.phone.includes(term));
                 this.renderCustomers(filtered);
             },
 
-            // --- SETTINGS ---
             async loadSettings() {
-                const snap = await getDoc(doc(db, "settings", "general"));
-                if(snap.exists()) {
-                    const d = snap.data();
-                    document.getElementById('set-shopname').value = d.shopName || '';
-                    document.getElementById('set-prefix').value = d.queuePrefix || 'A';
-                    document.getElementById('set-duration').value = d.avgDuration || 30;
+                const s = await getDoc(doc(db, "settings", "general"));
+                if(s.exists()) {
+                    document.getElementById('set-shop').value = s.data().shopName || '';
+                    document.getElementById('set-prefix').value = s.data().queuePrefix || '';
+                    document.getElementById('set-duration').value = s.data().avgDuration || 30;
                 }
             },
 
             async saveSettings(e) {
                 e.preventDefault();
                 await setDoc(doc(db, "settings", "general"), {
-                    shopName: document.getElementById('set-shopname').value,
+                    shopName: document.getElementById('set-shop').value,
                     queuePrefix: document.getElementById('set-prefix').value.toUpperCase(),
                     avgDuration: parseInt(document.getElementById('set-duration').value)
                 }, {merge: true});
-                
-                const msg = document.getElementById('set-msg');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 3000);
+                alert("Settings saved!");
             },
 
-            // --- TV DISPLAY & AUDIO LOGIC ---
-            initTV() {
-                document.getElementById('view-login').classList.add('hidden-view');
-                document.getElementById('sidebar').classList.add('hidden-view');
-                document.getElementById('main-content').classList.add('hidden-view');
-                document.getElementById('view-tv').classList.remove('hidden-view');
-                document.getElementById('tv-start-overlay').style.display = 'flex'; // Tunjuk butang Play
-
-                getDoc(doc(db, "settings", "general")).then(s => {
-                    if(s.exists()) document.getElementById('tv-shopname').innerText = (s.data().shopName || 'BARBERSHOP').toUpperCase();
-                });
-
-                setInterval(() => {
-                    const now = new Date();
-                    document.getElementById('tv-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
-                }, 1000);
-            },
-
-            startTV() {
-                // Sembunyikan butang play selepas diklik
-                document.getElementById('tv-start-overlay').style.display = 'none';
-
-                const tvElem = document.documentElement;
-                if (tvElem.requestFullscreen) {
-                    tvElem.requestFullscreen().catch(err => console.log(`Cannot fullscreen: ${err.message}`));
-                }
-
-                // Unlock audio context di browser (Wajib buat untuk Chrome/Safari)
-                let silentMsg = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(silentMsg);
-                
-                // Mula pantau giliran secara langsung
-                this.listenTVData();
-            },
-
-            playAnnouncement(queueNumber) {
+            async login(e) {
+                e.preventDefault();
+                const em = document.getElementById('login-email').value;
+                const pw = document.getElementById('login-password').value;
                 try {
-                    // Bunyi Loceng (Ding-Dong) - guna Audio API supaya tiada file luar
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc1 = ctx.createOscillator();
-                    const osc2 = ctx.createOscillator();
-                    const gainNode = ctx.createGain();
-                    
-                    osc1.type = 'sine';
-                    osc2.type = 'sine';
-                    osc1.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
-                    osc2.frequency.setValueAtTime(523.25, ctx.currentTime + 0.5); // C5
-                    
-                    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-                    
-                    osc1.connect(gainNode);
-                    osc2.connect(gainNode);
-                    gainNode.connect(ctx.destination);
-                    
-                    osc1.start(ctx.currentTime);
-                    osc1.stop(ctx.currentTime + 0.5);
-                    osc2.start(ctx.currentTime + 0.5);
-                    osc2.stop(ctx.currentTime + 1.5);
-
-                    // Suara Panggilan (TTS)
-                    setTimeout(() => {
-                        // Pecahkan string supaya TTS sebut satu-satu huruf/nombor, contoh "A", "0", "0", "1"
-                        const separatedNumber = queueNumber.split('').join(', ');
-                        const speech = new SpeechSynthesisUtterance(`Nombor giliran, ${separatedNumber}, sila ke tempat gunting.`);
-                        speech.lang = 'ms-MY';
-                        speech.rate = 0.85;
-                        speech.pitch = 1;
-                        window.speechSynthesis.speak(speech);
-                    }, 1500);
-
-                } catch (e) {
-                    console.error("Audio error:", e);
+                    await signInWithEmailAndPassword(auth, em, pw);
+                } catch(err) {
+                    const el = document.getElementById('login-error');
+                    el.innerText = "Invalid credentials";
+                    el.classList.remove('hidden');
                 }
             },
 
-            listenTVData() {
+            logout() { signOut(auth); },
+
+            startTvAudio() {
+                this.tvAudioAllowed = true;
+                document.getElementById('tv-start-screen').classList.add('hidden');
+                document.getElementById('tv-main-content').classList.remove('hidden');
+                
+                // Request Fullscreen for TV experience
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            },
+
+            async initTV() {
+                const s = await getDoc(doc(db, "settings", "general"));
+                if(s.exists()) document.getElementById('tv-shop-name').innerText = (s.data().shopName || 'THE BARBER SHOP').toUpperCase();
+
                 const today = this.getTodayStr();
                 const q = query(collection(db, "queues"), where("businessDate", "==", today));
                 
-                onSnapshot(q, (snapshot) => {
-                    const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                if(this.unsubTV) this.unsubTV();
+                
+                this.unsubTV = onSnapshot(q, (snapshot) => {
+                    let docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     docs.sort((a, b) => a.queueSequence - b.queueSequence);
 
-                    const currentlyCalledList = docs.filter(d => d.status === 'CALLED' || d.status === 'SERVING');
-                    const waitingList = docs.filter(d => d.status === 'WAITING');
+                    let called = docs.filter(d => d.status === 'CALLED');
+                    let waiting = docs.filter(d => d.status === 'WAITING');
+                    
+                    // Populate Waiting List (Next in line)
+                    let wHtml = '';
+                    waiting.slice(0, 5).forEach(d => {
+                        wHtml += `
+                            <div class="bg-darker border border-gray-800 p-4 rounded-xl flex justify-between items-center">
+                                <span class="text-3xl font-bold text-gray-300">${d.queueNumber}</span>
+                                <span class="text-gray-500 uppercase font-bold text-sm">
+                                    ${d.barberId && d.barberId !== 'null' ? d.barberName : 'Any Barber'}
+                                </span>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('tv-waiting-list').innerHTML = wHtml || '<div class="text-center text-gray-600 mt-10 font-bold uppercase tracking-widest">No upcoming queue</div>';
 
-                    // Audio Alert & Update Serving Board
-                    if (currentlyCalledList.length > 0) {
-                        // Ambil yang paling baru dipanggil
-                        currentlyCalledList.sort((a, b) => b.updatedAt?.toMillis() - a.updatedAt?.toMillis());
-                        const activeCall = currentlyCalledList[0];
+                    // Process Current "CALLED"
+                    if(called.length > 0) {
+                        // Get the most recently called
+                        called.sort((a,b) => b.updatedAt - a.updatedAt);
+                        const current = called[0];
                         
-                        document.getElementById('tv-serving').innerText = activeCall.queueNumber;
-
-                        if (this.lastCalledId !== activeCall.id && activeCall.status === 'CALLED') {
-                            this.lastCalledId = activeCall.id;
-                            this.playAnnouncement(activeCall.queueNumber);
+                        document.getElementById('tv-current-number').innerText = current.queueNumber;
+                        document.getElementById('tv-current-barber').innerText = current.handledByBarberName || 'Any Counter';
+                        
+                        // Check if we need to trigger audio (only if it's a new call)
+                        if (this.tvAudioAllowed && current.queueNumber !== this.tvLastCalledNumber) {
+                            this.tvLastCalledNumber = current.queueNumber;
+                            this.playCallSound(current.queueNumber, current.handledByBarberName);
                             
-                            // Visual Blink pada skrin TV
-                            const box = document.getElementById('tv-serving-box');
-                            if (box) {
-                                box.classList.remove('from-darkblue/40', 'border-primary/30');
-                                box.classList.add('from-green-600/60', 'border-green-400', 'animate-pulse');
-                                setTimeout(() => {
-                                    box.classList.add('from-darkblue/40', 'border-primary/30');
-                                    box.classList.remove('from-green-600/60', 'border-green-400', 'animate-pulse');
-                                }, 6000);
-                            }
+                            // Visual Flash
+                            const card = document.getElementById('tv-card-main');
+                            card.classList.remove('flash-green');
+                            void card.offsetWidth; // trigger reflow
+                            card.classList.add('flash-green');
                         }
                     } else {
-                        document.getElementById('tv-serving').innerText = "--";
-                    }
-
-                    // Update Next in Line Board
-                    for(let i=1; i<=3; i++) {
-                        const el = document.getElementById(`tv-next-${i}`);
-                        if(waitingList[i-1]) {
-                            el.innerText = waitingList[i-1].queueNumber;
+                        // If no one is actively 'CALLED', find who is 'SERVING'
+                        let serving = docs.filter(d => d.status === 'SERVING');
+                        if (serving.length > 0) {
+                            serving.sort((a,b) => b.updatedAt - a.updatedAt);
+                            document.getElementById('tv-current-number').innerText = serving[0].queueNumber;
+                            document.getElementById('tv-current-barber').innerText = serving[0].handledByBarberName || 'Service in progress';
+                            // Reset last called so it can ring again if someone gets called
+                            this.tvLastCalledNumber = null;
                         } else {
-                            el.innerText = "--";
+                            document.getElementById('tv-current-number').innerText = "--";
+                            document.getElementById('tv-current-barber').innerText = "Counter";
                         }
                     }
                 });
+            },
+
+            playCallSound(number, barberName) {
+                // 1. Play Chime
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5); // A4
+                
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 1);
+
+                // 2. Play Voice after 1 second delay
+                setTimeout(() => {
+                    if ('speechSynthesis' in window) {
+                        const text = `Nombor giliran, ${number.split('').join(' ')}. Sila ke kaunter, ${barberName || ''}`;
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = 'ms-MY'; // Malay language
+                        utterance.rate = 0.85; // slightly slower
+                        utterance.pitch = 1;
+                        window.speechSynthesis.speak(utterance);
+                    }
+                }, 1000);
             }
         };
 
