@@ -11,9 +11,9 @@
             theme: {
                 extend: {
                     colors: {
-                        darkblue: '#111111', // Black/Dark Grey from logo background
-                        primary: '#d6a033', // Mustard Gold from logo text
-                        secondary: '#f7d788' // Lighter gold for highlights
+                        darkblue: '#0f172a',
+                        primary: '#1e3a8a',
+                        secondary: '#3b82f6'
                     }
                 }
             }
@@ -29,13 +29,29 @@
 </head>
 <body class="bg-gray-100 flex h-screen overflow-hidden text-sm">
 
+    <!-- Global Custom Modal (Replaces alert) -->
+    <div id="custom-modal" class="hidden-view fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform transition-all scale-100 opacity-100">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <i class="fas fa-info-circle text-blue-600 text-xl" id="modal-icon"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2" id="modal-title">Notification</h3>
+                <p class="text-sm text-gray-500 mb-6" id="modal-msg"></p>
+                <button onclick="document.getElementById('custom-modal').classList.add('hidden-view')" class="w-full bg-darkblue text-white font-bold py-2.5 px-4 rounded-lg hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- TV Display View (Public, No Login) -->
     <div id="view-tv" class="hidden-view absolute inset-0 z-50 bg-gradient-to-br from-slate-900 to-black text-white flex flex-col overflow-hidden h-screen w-screen">
         
         <!-- Butang Start untuk Benarkan Bunyi (Browser Policy) -->
         <div id="tv-start-overlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
             <h2 class="text-3xl text-gray-300 mb-8 font-light">Paparan TV Bersedia</h2>
-            <button onclick="adminApp.startTV()" class="bg-primary text-black text-4xl font-bold py-8 px-16 rounded-3xl shadow-[0_0_40px_rgba(214,160,51,0.5)] hover:bg-secondary hover:scale-105 transition-all border-4 border-secondary cursor-pointer">
+            <button onclick="adminApp.startTV()" class="bg-blue-600 text-white text-4xl font-bold py-8 px-16 rounded-3xl shadow-[0_0_40px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition-all border-4 border-blue-400 cursor-pointer focus:outline-none">
                 <i class="fas fa-play mr-4"></i> MULA PAPARAN TV
             </button>
             <p class="text-gray-400 mt-8 max-w-lg text-center text-lg">Klik butang di atas untuk membenarkan sistem web ke mod skrin penuh dan memainkan bunyi loceng/suara.</p>
@@ -43,16 +59,16 @@
 
         <!-- TV Header -->
         <header class="w-full p-8 flex justify-between items-center border-b border-gray-800 bg-black/30">
-            <h1 class="text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary to-white drop-shadow-lg" id="tv-shopname">BARBERSHOP</h1>
-            <div class="text-4xl font-mono text-primary font-bold tracking-wider" id="tv-clock">00:00:00</div>
+            <h1 class="text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-white drop-shadow-lg" id="tv-shopname">BARBERSHOP</h1>
+            <div class="text-4xl font-mono text-blue-300 font-bold tracking-wider" id="tv-clock">00:00:00</div>
         </header>
 
         <!-- TV Main Content -->
         <div class="flex-grow flex w-full">
             <!-- Left: Now Serving -->
             <div class="w-3/5 flex flex-col items-center justify-center p-12 border-r border-gray-800 relative">
-                <div id="tv-serving-box" class="w-full aspect-video bg-gradient-to-b from-darkblue/40 to-transparent border border-primary/30 rounded-[3rem] flex flex-col items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(214,160,51,0.2)]">
-                    <h2 class="text-4xl font-semibold text-primary uppercase tracking-widest mb-6" id="tv-main-label">Now Serving</h2>
+                <div id="tv-serving-box" class="w-full aspect-video bg-gradient-to-b from-blue-900/40 to-transparent border border-blue-500/30 rounded-[3rem] flex flex-col items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(30,58,138,0.2)]">
+                    <h2 class="text-4xl font-semibold text-blue-400 uppercase tracking-widest mb-6" id="tv-main-label">Now Serving</h2>
                     <div class="text-[14rem] leading-none font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] tracking-tighter" id="tv-serving">--</div>
                 </div>
             </div>
@@ -65,7 +81,7 @@
                 <div class="flex-grow flex flex-col justify-center p-12 space-y-8">
                     <div class="bg-white/5 border border-white/10 rounded-3xl p-8 flex items-center justify-between shadow-inner">
                         <span class="text-2xl text-gray-400 font-bold">1st</span>
-                        <span class="text-7xl font-bold text-primary" id="tv-next-1">--</span>
+                        <span class="text-7xl font-bold text-yellow-400" id="tv-next-1">--</span>
                     </div>
                     <div class="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
                         <span class="text-xl text-gray-500 font-bold">2nd</span>
@@ -80,8 +96,8 @@
         </div>
         
         <!-- TV Footer -->
-        <footer class="w-full py-4 bg-darkblue border-t border-primary/50 text-center shadow-lg z-10">
-            <p class="text-2xl font-semibold text-primary tracking-wide">Sila bersedia apabila nombor giliran anda dipanggil. Terima kasih!</p>
+        <footer class="w-full py-4 bg-blue-700 text-center shadow-lg z-10">
+            <p class="text-2xl font-semibold text-white tracking-wide">Sila bersedia apabila nombor giliran anda dipanggil. Terima kasih!</p>
         </footer>
     </div>
 
@@ -105,7 +121,7 @@
                     <input type="password" id="login-pass" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                 </div>
                 <p id="login-error" class="text-red-500 text-xs font-bold mb-4 hidden"></p>
-                <button type="submit" class="w-full bg-darkblue text-primary font-bold py-3 px-4 rounded hover:bg-black transition-colors flex justify-center items-center">
+                <button type="submit" class="w-full bg-darkblue text-white font-bold py-3 px-4 rounded hover:bg-primary transition-colors flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-darkblue">
                     <span id="login-btn-text">SIGN IN</span>
                     <i id="login-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                 </button>
@@ -121,10 +137,10 @@
         
         <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
             <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4 px-3">Management</p>
-            <a href="#queue" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="queue"><i class="fas fa-users w-6"></i> Live Queue</a>
-            <a href="#bookings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="bookings"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
-            <a href="#customers" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="customers"><i class="fas fa-address-book w-6"></i> Customers</a>
-            <a href="#settings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary hover:text-black transition-colors text-gray-300" data-target="settings"><i class="fas fa-cog w-6"></i> Settings</a>
+            <a href="#queue" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="queue"><i class="fas fa-users w-6"></i> Live Queue</a>
+            <a href="#bookings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="bookings"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
+            <a href="#customers" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="customers"><i class="fas fa-address-book w-6"></i> Customers</a>
+            <a href="#settings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="settings"><i class="fas fa-cog w-6"></i> Settings</a>
             
             <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-8 px-3">Displays</p>
             <a href="#tv" target="_blank" class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-gray-400 border border-slate-700"><i class="fas fa-tv w-6"></i> Open TV Display</a>
@@ -140,7 +156,7 @@
                     <p class="text-green-400">Online</p>
                 </div>
             </div>
-            <button onclick="adminApp.logout()" class="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-lg transition-colors text-sm font-semibold">
+            <button onclick="adminApp.logout()" class="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-lg transition-colors text-sm font-semibold focus:outline-none">
                 <i class="fas fa-sign-out-alt w-6"></i> Sign Out
             </button>
         </div>
@@ -166,7 +182,7 @@
                 <!-- Action Bar -->
                 <div class="flex flex-col md:flex-row justify-between mb-6 gap-4">
                     <div class="flex gap-2">
-                        <button onclick="adminApp.callNext()" class="bg-primary text-black px-6 py-3 rounded-lg font-bold shadow-md hover:bg-secondary transition-all flex items-center justify-center min-w-[150px]">
+                        <button onclick="adminApp.callNext()" class="bg-primary text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-darkblue transition-all flex items-center justify-center min-w-[150px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                             <i class="fas fa-bullhorn mr-2"></i> CALL NEXT
                         </button>
                     </div>
@@ -250,7 +266,9 @@
                                     <th class="p-4 border-b font-bold text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="bookings-table-body" class="divide-y divide-gray-100"></tbody>
+                            <tbody id="bookings-table-body" class="divide-y divide-gray-100">
+                                <tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading bookings...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -267,7 +285,7 @@
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-full">
+                        <table class="w-full text-left border-collapse min-w-full" id="customers-table">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                                     <th class="p-4 border-b font-bold w-1/3">Customer Name</th>
@@ -306,7 +324,7 @@
                         
                         <div class="flex items-center justify-between border-t border-gray-100 pt-6">
                             <p id="set-msg" class="text-green-600 font-bold hidden"><i class="fas fa-check-circle mr-1"></i> Saved successfully</p>
-                            <button type="submit" class="bg-primary text-black font-bold py-3 px-8 rounded-lg shadow hover:bg-secondary transition-colors ml-auto">
+                            <button type="submit" id="set-btn" class="bg-primary text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-darkblue transition-colors ml-auto focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                                 <i class="fas fa-save mr-2"></i> SAVE SETTINGS
                             </button>
                         </div>
@@ -344,7 +362,15 @@
             unsubQueue: null,
             lastCalledId: null,
 
+            // Utility for custom modal alerts (replacing native alert())
+            showAlert(message, title = "Notification") {
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-msg').innerText = message;
+                document.getElementById('custom-modal').classList.remove('hidden-view');
+            },
+
             init() {
+                // Update system clock
                 setInterval(() => {
                     document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }, 1000);
@@ -352,10 +378,10 @@
                 // Handle routing #hash
                 window.addEventListener('hashchange', () => this.handleRoute());
                 
-                // Cek jika #tv diakses terus
+                // Check if #tv is accessed directly
                 if (window.location.hash === '#tv') {
                     this.initTV();
-                    return; // Berhenti laksanakan kod login
+                    return; // Stop login execution
                 }
 
                 // Auth Listener
@@ -413,11 +439,11 @@
 
                 document.querySelectorAll('.nav-link').forEach(el => {
                     if(el.dataset.target === hash) {
-                        el.classList.add('bg-primary', 'text-black');
-                        el.classList.remove('text-gray-300', 'hover:text-white');
+                        el.classList.add('bg-primary', 'text-white');
+                        el.classList.remove('text-gray-300');
                     } else {
-                        el.classList.remove('bg-primary', 'text-black');
-                        el.classList.add('text-gray-300', 'hover:text-white');
+                        el.classList.remove('bg-primary', 'text-white');
+                        el.classList.add('text-gray-300');
                     }
                 });
 
@@ -470,7 +496,7 @@
                         else if(data.status === 'COMPLETED') c++;
 
                         let badge = 'bg-yellow-100 text-yellow-800';
-                        if(data.status === 'CALLED') badge = 'bg-primary text-black border border-primary shadow-sm';
+                        if(data.status === 'CALLED') badge = 'bg-blue-100 text-blue-800 border border-blue-300 shadow-sm';
                         else if(data.status === 'SERVING') badge = 'bg-green-100 text-green-800';
                         else if(data.status === 'COMPLETED' || data.status === 'CANCELLED') badge = 'bg-gray-100 text-gray-600';
 
@@ -488,12 +514,12 @@
                             <tr class="border-b hover:bg-gray-50 transition-colors">
                                 <td class="p-4"><span class="font-black text-lg text-darkblue">${data.queueNumber}</span></td>
                                 <td class="p-4">
-                                    <div class="font-bold text-gray-800">${data.customerName}</div>
-                                    <div class="text-xs text-gray-500 font-mono">${data.phone}</div>
+                                    <div class="font-bold text-gray-800">${data.customerName || 'Walk-in'}</div>
+                                    <div class="text-xs text-gray-500 font-mono">${data.phone || '-'}</div>
                                 </td>
                                 <td class="p-4">
-                                    <div class="text-sm font-semibold">${data.serviceName}</div>
-                                    <div class="text-xs text-gray-500">${data.barberName}</div>
+                                    <div class="text-sm font-semibold">${data.serviceName || 'Basic Haircut'}</div>
+                                    <div class="text-xs text-gray-500">${data.barberName || 'Any Barber'}</div>
                                 </td>
                                 <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status}</span></td>
                                 <td class="p-4 text-right">${actions}</td>
@@ -510,296 +536,301 @@
             },
 
             async updateQ(id, status) {
-                await updateDoc(doc(db, "queues", id), { status, updatedAt: serverTimestamp() });
+                try {
+                    await updateDoc(doc(db, "queues", id), { status, updatedAt: serverTimestamp() });
+                } catch (e) {
+                    this.showAlert("Failed to update status. Error: " + e.message);
+                }
             },
 
             async callNext() {
                 const dateFilter = document.getElementById('queue-date-filter').value;
-                const qSnap = await getDocs(query(collection(db, "queues"), where("businessDate", "==", dateFilter), where("status", "==", "WAITING")));
-                
-                if(qSnap.empty) {
-                    alert("No waiting customers in queue.");
-                    return;
-                }
+                if(!dateFilter) return;
 
-                const docs = qSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                docs.sort((a, b) => a.queueSequence - b.queueSequence);
-                
-                const nextId = docs[0].id;
-                await updateDoc(doc(db, "queues", nextId), { status: 'CALLED', updatedAt: serverTimestamp() });
-            },
-
-            // --- BOOKINGS ---
-            async loadBookings() {
-                const dateFilter = document.getElementById('book-date-filter').value;
-                document.getElementById('bookings-table-body').innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading bookings...</td></tr>';
-                
-                const qSnap = await getDocs(query(collection(db, "bookings"), where("date", "==", dateFilter)));
-                
-                let docs = qSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                docs.sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-                let html = '';
-                docs.forEach(data => {
-                    let badge = 'bg-green-100 text-green-800';
-                    if(data.status === 'COMPLETED') badge = 'bg-gray-100 text-gray-600';
-                    else if(data.status === 'NO-SHOW') badge = 'bg-red-100 text-red-800';
-
-                    let actions = '';
-                    if(data.status === 'CONFIRMED') {
-                        actions = `
-                            <button onclick="adminApp.updateB('${data.id}', 'COMPLETED')" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded shadow-sm mr-1 font-bold">DONE</button>
-                            <button onclick="adminApp.updateB('${data.id}', 'NO-SHOW')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded font-bold">NO-SHOW</button>
-                        `;
+                try {
+                    // Query for waiting queues today
+                    const q = query(collection(db, "queues"), where("businessDate", "==", dateFilter), where("status", "==", "WAITING"));
+                    const snap = await getDocs(q);
+                    
+                    if (snap.empty) {
+                        this.showAlert("There are no customers currently waiting in the queue.", "Queue Empty");
+                        return;
                     }
 
-                    html += `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="p-4">
-                                <div class="font-bold text-gray-800">${data.startTime}</div>
-                                <div class="text-xs text-gray-400 font-mono">${data.bookingId}</div>
-                            </td>
-                            <td class="p-4">
-                                <div class="font-bold text-gray-800">${data.customerName}</div>
-                                <div class="text-xs text-gray-500 font-mono">${data.phone}</div>
-                            </td>
-                            <td class="p-4">
-                                <div class="text-sm font-semibold">${data.serviceName}</div>
-                                <div class="text-xs text-gray-500">${data.barberName}</div>
-                            </td>
-                            <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status}</span></td>
-                            <td class="p-4 text-right">${actions}</td>
-                        </tr>
-                    `;
-                });
+                    // Sort client-side (no complex index required)
+                    const docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                    docs.sort((a, b) => a.queueSequence - b.queueSequence);
+                    const nextItem = docs[0];
 
-                document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No bookings for this date.</td></tr>`;
-            },
+                    // 1. Update queue status to CALLED
+                    await updateDoc(doc(db, "queues", nextItem.id), { status: 'CALLED', updatedAt: serverTimestamp() });
 
-            async updateB(id, status) {
-                await updateDoc(doc(db, "bookings", id), { status, updatedAt: serverTimestamp() });
-                this.loadBookings(); // Refresh list
-            },
+                    // 2. Sync to TV Display Doc
+                    await setDoc(doc(db, "settings", "tv_display"), {
+                        currentCalled: nextItem.queueNumber,
+                        customerName: nextItem.customerName || '',
+                        timestamp: serverTimestamp()
+                    }, { merge: true });
 
-            // --- CUSTOMERS DIRECTORY ---
-            allCustomers: [],
-            async loadCustomers() {
-                try {
-                    document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading customer records...</td></tr>';
-                    
-                    // Fetch all COMPLETED queues and bookings
-                    const qSnap = await getDocs(query(collection(db, "queues"), where("status", "==", "COMPLETED")));
-                    const bSnap = await getDocs(query(collection(db, "bookings"), where("status", "==", "COMPLETED")));
-                    
-                    const customerMap = {};
-
-                    const processRecord = (data, dateField) => {
-                        if (!data.phone || !data.customerName) return;
-                        const phone = data.phone.trim();
-                        const date = data[dateField] || '';
-                        
-                        if (!customerMap[phone]) {
-                            customerMap[phone] = {
-                                name: data.customerName,
-                                phone: phone,
-                                totalVisits: 0,
-                                lastVisit: date
-                            };
-                        }
-                        customerMap[phone].totalVisits++;
-                        if (date > customerMap[phone].lastVisit) {
-                            customerMap[phone].lastVisit = date;
-                            customerMap[phone].name = data.customerName; 
-                        }
-                    };
-
-                    qSnap.forEach(d => processRecord(d.data(), 'businessDate'));
-                    bSnap.forEach(d => processRecord(d.data(), 'date'));
-
-                    this.allCustomers = Object.values(customerMap).sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
-                    this.renderCustomers(this.allCustomers);
-
-                } catch (e) {
-                    console.error("Error loading customers:", e);
-                    document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load records. Check connection.</td></tr>';
+                } catch(e) {
+                    this.showAlert("Error calling next: " + e.message, "System Error");
                 }
             },
 
-            renderCustomers(list) {
-                const html = list.map(c => `
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                        <td class="p-4 font-bold text-darkblue capitalize">${c.name}</td>
-                        <td class="p-4 text-gray-600 font-mono text-sm">${c.phone}</td>
-                        <td class="p-4 text-center">
-                            <span class="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full text-xs border border-blue-200">${c.totalVisits}</span>
-                        </td>
-                        <td class="p-4 text-gray-500 text-sm font-semibold">${c.lastVisit || 'N/A'}</td>
-                    </tr>
-                `).join('');
-                document.getElementById('customers-table-body').innerHTML = html || '<tr><td colspan="4" class="p-8 text-center text-gray-400">No customer records found.</td></tr>';
+            // --- BOOKINGS MANAGEMENT ---
+            async loadBookings() {
+                const dateFilter = document.getElementById('book-date-filter').value;
+                if(!dateFilter) return;
+                
+                document.getElementById('bookings-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Fetching bookings...</td></tr>`;
+
+                try {
+                    const q = query(collection(db, "bookings"), where("bookingDate", "==", dateFilter));
+                    const snap = await getDocs(q);
+                    
+                    let html = '';
+                    const docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                    // Sort by time
+                    docs.sort((a,b) => (a.bookingTime || '').localeCompare(b.bookingTime || ''));
+
+                    docs.forEach(data => {
+                        let badge = 'bg-gray-100 text-gray-800';
+                        if(data.status === 'CONFIRMED') badge = 'bg-green-100 text-green-800';
+                        else if(data.status === 'PENDING') badge = 'bg-yellow-100 text-yellow-800';
+                        else if(data.status === 'CANCELLED') badge = 'bg-red-100 text-red-800';
+
+                        html += `
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="p-4">
+                                    <div class="font-bold text-gray-800">${data.bookingTime || '--:--'}</div>
+                                    <div class="text-xs text-gray-400">#${data.id.substring(0,6)}</div>
+                                </td>
+                                <td class="p-4">
+                                    <div class="font-bold">${data.customerName || 'Unknown'}</div>
+                                    <div class="text-xs text-gray-500 font-mono">${data.phone || '-'}</div>
+                                </td>
+                                <td class="p-4">
+                                    <div class="text-sm font-semibold">${data.serviceName || '-'}</div>
+                                    <div class="text-xs text-gray-500">${data.barberName || '-'}</div>
+                                </td>
+                                <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status || 'PENDING'}</span></td>
+                                <td class="p-4 text-right">
+                                    <button class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded transition-colors font-bold"><i class="fas fa-ellipsis-v"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No appointments for this date.</td></tr>`;
+                } catch(e) {
+                    document.getElementById('bookings-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Error loading bookings.</td></tr>`;
+                    console.error("Booking Error:", e);
+                }
+            },
+
+            // --- CUSTOMERS MANAGEMENT ---
+            async loadCustomers() {
+                document.getElementById('customers-table-body').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Analyzing historical records...</td></tr>`;
+                
+                try {
+                    // In a production app, you'd query a dedicated 'customers' collection. 
+                    // For this demo, we aggregate from queues to build the directory dynamically.
+                    const snap = await getDocs(collection(db, "queues"));
+                    const customersMap = {};
+
+                    snap.docs.forEach(doc => {
+                        const data = doc.data();
+                        const phone = data.phone || 'Walk-in (No Phone)';
+                        
+                        if(!customersMap[phone]) {
+                            customersMap[phone] = {
+                                name: data.customerName || 'Unknown',
+                                phone: phone,
+                                totalVisits: 0,
+                                lastVisitDate: data.businessDate || 'Unknown'
+                            };
+                        }
+                        customersMap[phone].totalVisits += 1;
+                        // Determine latest date (string comparison works for ISO YYYY-MM-DD)
+                        if(data.businessDate && data.businessDate > customersMap[phone].lastVisitDate) {
+                            customersMap[phone].lastVisitDate = data.businessDate;
+                            customersMap[phone].name = data.customerName; // update to latest known name
+                        }
+                    });
+
+                    let html = '';
+                    const custList = Object.values(customersMap).sort((a,b) => b.totalVisits - a.totalVisits); // sort by loyalty
+                    
+                    custList.forEach(c => {
+                        html += `
+                            <tr class="border-b hover:bg-gray-50 transition-colors cust-row">
+                                <td class="p-4 font-bold text-gray-800 cust-name">${c.name}</td>
+                                <td class="p-4 font-mono text-gray-600 cust-phone">${c.phone}</td>
+                                <td class="p-4 text-center">
+                                    <span class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-xs">${c.totalVisits}</span>
+                                </td>
+                                <td class="p-4 text-gray-500 text-sm">${c.lastVisitDate}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    document.getElementById('customers-table-body').innerHTML = html || `<tr><td colspan="4" class="p-8 text-center text-gray-400">No customer records found.</td></tr>`;
+                } catch(e) {
+                    document.getElementById('customers-table-body').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load directory.</td></tr>`;
+                    console.error("Customer Error:", e);
+                }
             },
 
             filterCustomers() {
-                const term = document.getElementById('cust-search').value.toLowerCase();
-                const filtered = this.allCustomers.filter(c => 
-                    c.name.toLowerCase().includes(term) || c.phone.includes(term)
-                );
-                this.renderCustomers(filtered);
+                const search = document.getElementById('cust-search').value.toLowerCase();
+                const rows = document.querySelectorAll('.cust-row');
+                rows.forEach(row => {
+                    const name = row.querySelector('.cust-name').innerText.toLowerCase();
+                    const phone = row.querySelector('.cust-phone').innerText.toLowerCase();
+                    if(name.includes(search) || phone.includes(search)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             },
 
-            // --- SETTINGS ---
+            // --- SETTINGS MANAGEMENT ---
             async loadSettings() {
-                const snap = await getDoc(doc(db, "settings", "general"));
-                if(snap.exists()) {
-                    const d = snap.data();
-                    document.getElementById('set-shopname').value = d.shopName || '';
-                    document.getElementById('set-prefix').value = d.queuePrefix || 'A';
-                    document.getElementById('set-duration').value = d.avgDuration || 30;
+                try {
+                    const docSnap = await getDoc(doc(db, "settings", "general"));
+                    if(docSnap.exists()) {
+                        const data = docSnap.data();
+                        document.getElementById('set-shopname').value = data.shopName || '';
+                        document.getElementById('set-prefix').value = data.queuePrefix || 'A';
+                        document.getElementById('set-duration').value = data.avgDuration || 15;
+                    }
+                } catch(e) {
+                    console.error("Settings Load Error:", e);
                 }
             },
 
             async saveSettings(e) {
                 e.preventDefault();
-                await setDoc(doc(db, "settings", "general"), {
-                    shopName: document.getElementById('set-shopname').value,
-                    queuePrefix: document.getElementById('set-prefix').value.toUpperCase(),
-                    avgDuration: parseInt(document.getElementById('set-duration').value)
-                }, {merge: true});
-                
+                const btn = document.getElementById('set-btn');
                 const msg = document.getElementById('set-msg');
-                msg.classList.remove('hidden');
-                setTimeout(() => msg.classList.add('hidden'), 3000);
+                const prevHtml = btn.innerHTML;
+                
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> SAVING...`;
+                btn.disabled = true;
+
+                try {
+                    await setDoc(doc(db, "settings", "general"), {
+                        shopName: document.getElementById('set-shopname').value,
+                        queuePrefix: document.getElementById('set-prefix').value,
+                        avgDuration: parseInt(document.getElementById('set-duration').value)
+                    }, {merge: true});
+
+                    msg.classList.remove('hidden');
+                    setTimeout(() => msg.classList.add('hidden'), 3000);
+                } catch(error) {
+                    this.showAlert("Failed to save settings: " + error.message, "Settings Error");
+                } finally {
+                    btn.innerHTML = prevHtml;
+                    btn.disabled = false;
+                }
             },
 
-            // --- TV DISPLAY & AUDIO LOGIC ---
+            // --- TV DISPLAY LOGIC ---
+            startTV() {
+                // Initialize speech synthesis to bypass browser policy constraints
+                const synth = window.speechSynthesis;
+                if(synth) {
+                    const u = new SpeechSynthesisUtterance('');
+                    synth.speak(u);
+                }
+                
+                document.getElementById('tv-start-overlay').classList.add('hidden-view');
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                });
+            },
+
             initTV() {
+                document.getElementById('view-tv').classList.remove('hidden-view');
                 document.getElementById('view-login').classList.add('hidden-view');
                 document.getElementById('sidebar').classList.add('hidden-view');
                 document.getElementById('main-content').classList.add('hidden-view');
-                document.getElementById('view-tv').classList.remove('hidden-view');
-                document.getElementById('tv-start-overlay').style.display = 'flex'; // Tunjuk butang Play
+                document.body.classList.remove('bg-gray-100');
 
-                getDoc(doc(db, "settings", "general")).then(s => {
-                    if(s.exists()) document.getElementById('tv-shopname').innerText = (s.data().shopName || 'BARBERSHOP').toUpperCase();
-                });
-
+                // Run clock
                 setInterval(() => {
-                    const now = new Date();
-                    document.getElementById('tv-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+                    document.getElementById('tv-clock').innerText = new Date().toLocaleTimeString('en-US', {hour12: false});
                 }, 1000);
-            },
 
-            startTV() {
-                // Sembunyikan butang play selepas diklik
-                document.getElementById('tv-start-overlay').style.display = 'none';
-
-                const tvElem = document.documentElement;
-                if (tvElem.requestFullscreen) {
-                    tvElem.requestFullscreen().catch(err => console.log(`Cannot fullscreen: ${err.message}`));
-                }
-
-                // Unlock audio context di browser (Wajib buat untuk Chrome/Safari)
-                let silentMsg = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(silentMsg);
-                
-                // Mula pantau giliran secara langsung
-                this.listenTVData();
-            },
-
-            playAnnouncement(queueNumber) {
-                try {
-                    // Bunyi Loceng (Ding-Dong) - guna Audio API supaya tiada file luar
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc1 = ctx.createOscillator();
-                    const osc2 = ctx.createOscillator();
-                    const gainNode = ctx.createGain();
-                    
-                    osc1.type = 'sine';
-                    osc2.type = 'sine';
-                    osc1.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
-                    osc2.frequency.setValueAtTime(523.25, ctx.currentTime + 0.5); // C5
-                    
-                    gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-                    
-                    osc1.connect(gainNode);
-                    osc2.connect(gainNode);
-                    gainNode.connect(ctx.destination);
-                    
-                    osc1.start(ctx.currentTime);
-                    osc1.stop(ctx.currentTime + 0.5);
-                    osc2.start(ctx.currentTime + 0.5);
-                    osc2.stop(ctx.currentTime + 1.5);
-
-                    // Suara Panggilan (TTS)
-                    setTimeout(() => {
-                        // Pecahkan string supaya TTS sebut satu-satu huruf/nombor, contoh "A", "0", "0", "1"
-                        const separatedNumber = queueNumber.split('').join(', ');
-                        const speech = new SpeechSynthesisUtterance(`Nombor giliran, ${separatedNumber}, sila ke tempat gunting.`);
-                        speech.lang = 'ms-MY';
-                        speech.rate = 0.85;
-                        speech.pitch = 1;
-                        window.speechSynthesis.speak(speech);
-                    }, 1500);
-
-                } catch (e) {
-                    console.error("Audio error:", e);
-                }
-            },
-
-            listenTVData() {
-                const today = this.getTodayStr();
-                const q = query(collection(db, "queues"), where("businessDate", "==", today));
-                
-                onSnapshot(q, (snapshot) => {
-                    const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                    docs.sort((a, b) => a.queueSequence - b.queueSequence);
-
-                    const currentlyCalledList = docs.filter(d => d.status === 'CALLED' || d.status === 'SERVING');
-                    const waitingList = docs.filter(d => d.status === 'WAITING');
-
-                    // Audio Alert & Update Serving Board
-                    if (currentlyCalledList.length > 0) {
-                        // Ambil yang paling baru dipanggil
-                        currentlyCalledList.sort((a, b) => b.updatedAt?.toMillis() - a.updatedAt?.toMillis());
-                        const activeCall = currentlyCalledList[0];
-                        
-                        document.getElementById('tv-serving').innerText = activeCall.queueNumber;
-
-                        if (this.lastCalledId !== activeCall.id && activeCall.status === 'CALLED') {
-                            this.lastCalledId = activeCall.id;
-                            this.playAnnouncement(activeCall.queueNumber);
-                            
-                            // Visual Blink pada skrin TV
-                            const box = document.getElementById('tv-serving-box');
-                            if (box) {
-                                box.classList.remove('from-darkblue/40', 'border-primary/30');
-                                box.classList.add('from-green-600/60', 'border-green-400', 'animate-pulse');
-                                setTimeout(() => {
-                                    box.classList.add('from-darkblue/40', 'border-primary/30');
-                                    box.classList.remove('from-green-600/60', 'border-green-400', 'animate-pulse');
-                                }, 6000);
-                            }
-                        }
-                    } else {
-                        document.getElementById('tv-serving').innerText = "--";
+                // Fetch Shop Name for TV
+                getDoc(doc(db, "settings", "general")).then(docSnap => {
+                    if(docSnap.exists() && docSnap.data().shopName) {
+                        document.getElementById('tv-shopname').innerText = docSnap.data().shopName.toUpperCase();
                     }
+                });
 
-                    // Update Next in Line Board
-                    for(let i=1; i<=3; i++) {
-                        const el = document.getElementById(`tv-next-${i}`);
-                        if(waitingList[i-1]) {
-                            el.innerText = waitingList[i-1].queueNumber;
-                        } else {
-                            el.innerText = "--";
+                // Listen to Called Number updates
+                onSnapshot(doc(db, "settings", "tv_display"), (docSnap) => {
+                    if(docSnap.exists()) {
+                        const data = docSnap.data();
+                        if(data.currentCalled && data.currentCalled !== this.lastCalledId) {
+                            this.lastCalledId = data.currentCalled;
+                            
+                            // Visual Effects
+                            const box = document.getElementById('tv-serving-box');
+                            document.getElementById('tv-serving').innerText = data.currentCalled;
+                            
+                            box.classList.remove('from-blue-900/40', 'border-blue-500/30');
+                            box.classList.add('from-green-600/60', 'border-green-400');
+                            
+                            setTimeout(() => {
+                                box.classList.remove('from-green-600/60', 'border-green-400');
+                                box.classList.add('from-blue-900/40', 'border-blue-500/30');
+                            }, 2000);
+
+                            // TTS Announcement
+                            this.speak(`Nombor giliran, ${data.currentCalled}, sila ke kaunter.`);
                         }
                     }
                 });
+
+                // Listen to Upcoming Queue updates
+                const q = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()), where("status", "==", "WAITING"));
+                onSnapshot(q, (snap) => {
+                    const docs = snap.docs.map(d => d.data());
+                    docs.sort((a,b) => a.queueSequence - b.queueSequence);
+                    
+                    document.getElementById('tv-next-1').innerText = docs[0] ? docs[0].queueNumber : '--';
+                    document.getElementById('tv-next-2').innerText = docs[1] ? docs[1].queueNumber : '--';
+                    document.getElementById('tv-next-3').innerText = docs[2] ? docs[2].queueNumber : '--';
+                });
+            },
+
+            speak(text) {
+                if(!window.speechSynthesis) return;
+                const synth = window.speechSynthesis;
+                // Optional: Cancel previous ongoing speech
+                if(synth.speaking) {
+                    synth.cancel();
+                }
+                const utterance = new SpeechSynthesisUtterance(text);
+                // Prefer local language
+                utterance.lang = 'ms-MY';
+                utterance.rate = 0.85; 
+                utterance.pitch = 1.1;
+                synth.speak(utterance);
             }
         };
 
+        // Expose to global window so inline HTML onclick handlers can access it
         window.adminApp = AdminApp;
-        document.addEventListener('DOMContentLoaded', () => AdminApp.init());
+        
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            AdminApp.init();
+        });
+
     </script>
 </body>
 </html>
