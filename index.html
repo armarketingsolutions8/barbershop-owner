@@ -55,7 +55,8 @@
                 <div id="tv-serving-box" class="w-full aspect-video bg-gradient-to-b from-blue-900/40 to-transparent border border-blue-500/30 rounded-[3rem] flex flex-col items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(30,58,138,0.2)] p-6">
                     <h2 class="text-3xl font-semibold text-blue-400 uppercase tracking-widest mb-4" id="tv-main-label">Sedang Dipanggil</h2>
                     <div class="text-[12rem] leading-none font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] font-mono" id="tv-serving">--</div>
-                    <p class="text-xl text-blue-200 mt-4 font-semibold" id="tv-serving-cust">Sila ke Kerusi Barber</p>
+                    <p class="text-3xl text-amber-400 mt-4 font-black uppercase tracking-widest drop-shadow-md" id="tv-serving-counter">Sila ke Kaunter --</p>
+                    <p class="text-xl text-blue-200 mt-2 font-semibold" id="tv-serving-cust">Pelanggan</p>
                 </div>
             </div>
             
@@ -204,9 +205,14 @@
             <!-- SECTION: LIVE QUEUE -->
             <section id="sec-queue" class="hidden-view">
                 <div class="flex flex-col md:flex-row justify-between mb-6 gap-4">
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 items-center">
+                        <select id="queue-counter-select" class="bg-slate-800 text-white px-4 py-3 rounded-xl font-bold shadow-md outline-none cursor-pointer border-r-8 border-transparent">
+                            <option value="Kaunter 1">Kaunter 1</option>
+                            <option value="Kaunter 2">Kaunter 2</option>
+                            <option value="Kaunter 3">Kaunter 3</option>
+                        </select>
                         <button onclick="adminApp.callNext()" class="bg-primary hover:bg-blue-900 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all flex items-center justify-center">
-                            <i class="fas fa-bullhorn mr-2"></i> PANGGIL GILIRAN (NEXT)
+                            <i class="fas fa-bullhorn mr-2"></i> PANGGIL (NEXT)
                         </button>
                     </div>
                     <div class="flex gap-2 items-center">
@@ -287,23 +293,23 @@
                         <!-- Grid Display of Items -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="pos-items-grid">
                             <!-- Items dynamically injected here -->
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Current Cart & Checkout -->
-                    <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center pb-4 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-base"><i class="fas fa-shopping-cart text-emerald-500 mr-2"></i> Troli Bayaran POS</h3>
-                                <button onclick="adminApp.clearPosCart()" class="text-xs text-red-500 font-semibold hover:underline"><i class="fas fa-trash-alt mr-1"></i> Kosongkan</button>
-                            </div>
-
-                            <!-- Customer Info Selection -->
-                            <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Pelanggan / No. Giliran</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="pos-cust-name" placeholder="Pelanggan Am (Walk-in)" class="w-full p-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-primary bg-white">
-                                    <input type="hidden" id="pos-linked-queue-id">
+                            <!-- Customer Info & Barber Selection -->
+                            <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Pelanggan / No. Giliran</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="pos-cust-name" placeholder="Pelanggan Am (Walk-in)" class="w-full p-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-primary bg-white">
+                                        <input type="hidden" id="pos-linked-queue-id">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Barber / Jurugunting</label>
+                                    <select id="pos-barber-select" class="w-full p-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-1 focus:ring-primary bg-white font-semibold cursor-pointer">
+                                        <option value="Amin">Amin</option>
+                                        <option value="Bakar">Bakar</option>
+                                        <option value="Chong">Chong</option>
+                                        <option value="Danish">Danish</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -399,7 +405,7 @@
                                     <th class="p-4 font-bold">No. Resit / ID</th>
                                     <th class="p-4 font-bold">Masa / Tarikh</th>
                                     <th class="p-4 font-bold">Pelanggan</th>
-                                    <th class="p-4 font-bold">Item Dibelil</th>
+                                    <th class="p-4 font-bold">Item & Barber</th>
                                     <th class="p-4 font-bold">Kaedah Bayaran</th>
                                     <th class="p-4 font-bold text-right">Jumlah (RM)</th>
                                     <th class="p-4 font-bold text-center">Tindakan</th>
@@ -583,6 +589,10 @@
                     <span>No. Resit: <strong id="rec-id">#0000</strong></span>
                     <span id="rec-cust">Pelanggan</span>
                 </div>
+                <div class="pb-1 mb-2 border-b border-dashed border-slate-300 text-[10px] text-slate-500 flex justify-between">
+                    <span>Barber:</span>
+                    <span id="rec-barber" class="font-bold text-slate-700">Amin</span>
+                </div>
                 <div id="rec-items-list" class="space-y-1 my-3 text-[11px]">
                     <!-- Items -->
                 </div>
@@ -656,7 +666,7 @@
                 avgDuration: 20
             },
             queueList: [
-                { id: 'q1', queueNo: 'A01', customerName: 'Ahmad Faiz', service: 'Cut & Wash', status: 'SERVING', date: new Date().toISOString().split('T')[0] },
+                { id: 'q1', queueNo: 'A01', customerName: 'Ahmad Faiz', service: 'Cut & Wash', status: 'SERVING', counter: 'Kaunter 1', calledAt: Date.now(), date: new Date().toISOString().split('T')[0] },
                 { id: 'q2', queueNo: 'A02', customerName: 'Chung Wei', service: 'Haircut Fade', status: 'WAITING', date: new Date().toISOString().split('T')[0] },
                 { id: 'q3', queueNo: 'A03', customerName: 'Ramasamy', service: 'Beard Trim', status: 'WAITING', date: new Date().toISOString().split('T')[0] }
             ],
@@ -852,10 +862,10 @@
                         <td class="p-4 font-mono font-bold text-slate-800 text-sm">${item.queueNo}</td>
                         <td class="p-4 font-semibold text-slate-700">${item.customerName}</td>
                         <td class="p-4 text-slate-600">${item.service}</td>
-                        <td class="p-4">${this.getStatusBadge(item.status)}</td>
+                        <td class="p-4">${this.getStatusBadge(item.status, item.counter)}</td>
                         <td class="p-4 text-right space-x-1">
                             ${item.status === 'WAITING' ? `
-                                <button onclick="adminApp.updateQueueStatus('${item.id}', 'SERVING')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+                                <button onclick="adminApp.updateQueueStatus('${item.id}', 'SERVING', document.getElementById('queue-counter-select').value)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
                                     <i class="fas fa-play mr-1"></i> Panggil
                                 </button>
                             ` : ''}
@@ -877,10 +887,10 @@
                 this.updateTVDisplay();
             },
 
-            getStatusBadge(status) {
+            getStatusBadge(status, counter) {
                 switch(status) {
                     case 'WAITING': return '<span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-[10px] font-bold"><i class="fas fa-clock mr-1"></i> Menunggu</span>';
-                    case 'SERVING': return '<span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-[10px] font-bold"><i class="fas fa-scissors mr-1"></i> Dipotong</span>';
+                    case 'SERVING': return `<span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-[10px] font-bold"><i class="fas fa-cut mr-1"></i> Dipotong (${counter || 'Kaunter'})</span>`;
                     case 'COMPLETED': return '<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-[10px] font-bold"><i class="fas fa-check mr-1"></i> Selesai</span>';
                     default: return status;
                 }
@@ -889,14 +899,21 @@
             callNext() {
                 const nextItem = state.queueList.find(q => q.status === 'WAITING');
                 if (nextItem) {
-                    this.updateQueueStatus(nextItem.id, 'SERVING');
+                    const selectedCounter = document.getElementById('queue-counter-select').value;
+                    this.updateQueueStatus(nextItem.id, 'SERVING', selectedCounter);
+                } else {
+                    this.showToast('Tiada pelanggan dalam giliran menunggu.');
                 }
             },
 
-            updateQueueStatus(id, newStatus) {
+            updateQueueStatus(id, newStatus, counter = null) {
                 const item = state.queueList.find(q => q.id === id);
                 if (item) {
                     item.status = newStatus;
+                    if (newStatus === 'SERVING') {
+                        item.counter = counter;
+                        item.calledAt = Date.now();
+                    }
                     this.loadQueue();
                 }
             },
@@ -1058,6 +1075,7 @@
 
                 const custName = document.getElementById('pos-cust-name').value.trim() || 'Pelanggan Walk-in';
                 const queueId = document.getElementById('pos-linked-queue-id').value;
+                const barberName = document.getElementById('pos-barber-select').value;
                 const total = state.posCart.reduce((acc, i) => acc + (i.price * i.qty), 0);
                 const receiptNo = 'INV-' + Math.floor(100000 + Math.random() * 900000);
 
@@ -1065,6 +1083,7 @@
                     id: 's_' + Date.now(),
                     receiptNo: receiptNo,
                     customerName: custName,
+                    barber: barberName,
                     items: [...state.posCart],
                     total: total,
                     method: state.selectedPaymentMethod,
@@ -1090,6 +1109,7 @@
                 document.getElementById('rec-shop-name').innerText = state.shopSettings.shopName;
                 document.getElementById('rec-id').innerText = sale.receiptNo;
                 document.getElementById('rec-cust').innerText = sale.customerName;
+                document.getElementById('rec-barber').innerText = sale.barber || '-';
                 document.getElementById('rec-date').innerText = new Date(sale.date).toLocaleString('ms-MY');
                 document.getElementById('rec-total').innerText = `RM ${sale.total.toFixed(2)}`;
                 document.getElementById('rec-method').innerText = sale.method;
@@ -1124,7 +1144,10 @@
                         <td class="p-4 font-mono font-bold text-slate-800">${sale.receiptNo}</td>
                         <td class="p-4 text-slate-500">${new Date(sale.date).toLocaleDateString('ms-MY')} ${new Date(sale.date).toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit'})}</td>
                         <td class="p-4 font-semibold text-slate-700">${sale.customerName}</td>
-                        <td class="p-4 text-slate-600">${sale.items.map(i => i.name).join(', ')}</td>
+                        <td class="p-4">
+                            <div class="text-slate-600 font-medium">${sale.items.map(i => i.name).join(', ')}</div>
+                            <div class="text-[10px] font-bold text-purple-600 mt-1"><i class="fas fa-user-tag mr-1"></i>${sale.barber || 'Umum'}</div>
+                        </td>
                         <td class="p-4">${this.getPaymentBadge(sale.method)}</td>
                         <td class="p-4 text-right font-black text-slate-800">RM ${sale.total.toFixed(2)}</td>
                         <td class="p-4 text-center">
@@ -1289,11 +1312,14 @@
             },
 
             updateTVDisplay() {
-                const serving = state.queueList.find(q => q.status === 'SERVING');
+                // Cari yang sedang di-serve dan susun berdasarkan yang paling terkini dipanggil
+                const servingList = state.queueList.filter(q => q.status === 'SERVING').sort((a, b) => (b.calledAt || 0) - (a.calledAt || 0));
+                const serving = servingList.length > 0 ? servingList[0] : null;
                 const waitingList = state.queueList.filter(q => q.status === 'WAITING');
 
                 document.getElementById('tv-serving').innerText = serving ? serving.queueNo : '--';
-                document.getElementById('tv-serving-cust').innerText = serving ? serving.customerName : 'Sila tunggu panggil...';
+                document.getElementById('tv-serving-counter').innerText = serving ? `SILA KE ${serving.counter.toUpperCase()}` : 'Sila Tunggu Giliran';
+                document.getElementById('tv-serving-cust').innerText = serving ? serving.customerName : '';
 
                 document.getElementById('tv-next-1').innerText = waitingList[0] ? waitingList[0].queueNo : '--';
                 document.getElementById('tv-next-2').innerText = waitingList[1] ? waitingList[1].queueNo : '--';
