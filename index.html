@@ -127,9 +127,15 @@
                 <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-900/20 rounded-full blur-3xl"></div>
                 
                 <div id="tv-serving-box" class="z-10 flex flex-col items-center justify-center transition-all duration-700 p-12 w-full h-full">
-                    <h2 class="text-3xl font-semibold text-brand-400 uppercase tracking-[0.3em] mb-8" id="tv-main-label">Now Serving</h2>
-                    <div class="text-[16rem] leading-none font-black text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] tracking-tighter" id="tv-serving">--</div>
-                    <p id="tv-serving-name" class="mt-8 text-4xl text-slate-400 font-light truncate max-w-xl"></p>
+                    <h2 class="text-3xl font-semibold text-brand-400 uppercase tracking-[0.3em] mb-4" id="tv-main-label">Now Serving</h2>
+                    <div class="text-[14rem] leading-none font-black text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] tracking-tighter" id="tv-serving">--</div>
+                    
+                    <!-- NEW: Counter Display Box -->
+                    <div class="mt-4 px-8 py-3 bg-brand-600/30 border border-brand-500/50 rounded-2xl backdrop-blur-sm">
+                        <span class="text-5xl font-bold text-brand-300 uppercase tracking-widest" id="tv-counter-label">KAUNTER --</span>
+                    </div>
+
+                    <p id="tv-serving-name" class="mt-6 text-3xl text-slate-400 font-light truncate max-w-xl"></p>
                 </div>
             </div>
             
@@ -299,87 +305,25 @@
                 <section id="sec-queue" class="hidden-view max-w-7xl mx-auto">
                     <!-- Action Bar -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 bg-white p-4 lg:p-5 rounded-2xl shadow-soft border border-slate-100">
-                        <button onclick="adminApp.callNext()" class="w-full sm:w-auto bg-brand-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-brand-500/20 active:translate-y-0">
-                            <i class="fas fa-bullhorn mr-3 text-lg"></i> CALL NEXT CUSTOMER
-                        </button>
-                        <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
-                            <span class="text-slate-500 font-semibold px-3 text-sm">Date</span>
-                            <input type="date" id="queue-date-filter" class="bg-white border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" onchange="adminApp.loadQueue()">
-                        </div>
-                    </div>
-
-                    <!-- Enhanced Status Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                        <!-- Waiting -->
-                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-amber-200 transition-colors relative overflow-hidden">
-                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-amber-100/50 to-transparent rounded-bl-full -z-10"></div>
-                            <div>
-                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Waiting</p>
-                                <h3 class="text-3xl font-black text-slate-800" id="stat-waiting">0</h3>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                            <!-- NEW: Counter Selection Dropdown -->
+                            <div class="relative w-full sm:w-auto">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-desktop text-brand-500"></i>
+                                </div>
+                                <select id="counter-select" class="pl-10 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 font-bold text-slate-700 w-full appearance-none outline-none">
+                                    <option value="1">Kaunter 1</option>
+                                    <option value="2">Kaunter 2</option>
+                                    <option value="3">Kaunter 3</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-hourglass-half"></i></div>
-                        </div>
-                        <!-- Serving -->
-                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-blue-200 transition-colors relative overflow-hidden">
-                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-bl-full -z-10"></div>
-                            <div>
-                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Serving</p>
-                                <h3 class="text-3xl font-black text-slate-800" id="stat-serving">0</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-cut"></i></div>
-                        </div>
-                        <!-- Completed -->
-                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-emerald-200 transition-colors relative overflow-hidden">
-                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-emerald-100/50 to-transparent rounded-bl-full -z-10"></div>
-                            <div>
-                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Completed</p>
-                                <h3 class="text-3xl font-black text-slate-800" id="stat-completed">0</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-check-double"></i></div>
-                        </div>
-                        <!-- Total -->
-                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-purple-200 transition-colors relative overflow-hidden">
-                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-purple-100/50 to-transparent rounded-bl-full -z-10"></div>
-                            <div>
-                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Total Today</p>
-                                <h3 class="text-3xl font-black text-slate-800" id="stat-total">0</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-chart-line"></i></div>
-                        </div>
-                    </div>
-
-                    <!-- Data Table -->
-                    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden">
-                        <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                            <h3 class="font-bold text-slate-800 text-lg">Active Queue List</h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse whitespace-nowrap">
-                                <thead>
-                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-y border-slate-100">
-                                        <th class="px-6 py-4 font-bold w-24">Ticket</th>
-                                        <th class="px-6 py-4 font-bold">Customer Details</th>
-                                        <th class="px-6 py-4 font-bold">Service / Staff</th>
-                                        <th class="px-6 py-4 font-bold">Status</th>
-                                        <th class="px-6 py-4 font-bold text-right">Manage</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="queue-table-body" class="divide-y divide-slate-100 bg-white">
-                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Loading queue data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Bookings Section -->
-                <section id="sec-bookings" class="hidden-view max-w-7xl mx-auto">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 bg-white p-4 lg:p-5 rounded-2xl shadow-soft border border-slate-100">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-slate-800 tracking-tight">Appointments</h3>
+                            
+                            <button onclick="adminApp.callNext()" class="w-full sm:w-auto bg-brand-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-brand-500/20 active:translate-y-0">
+                                <i class="fas fa-bullhorn mr-3 text-lg"></i> CALL NEXT
+                            </button>
                         </div>
                         <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
                             <span class="text-slate-500 font-semibold px-3 text-sm">Date</span>
@@ -775,6 +719,7 @@
 
             async callNext() {
                 const dateFilter = document.getElementById('queue-date-filter').value;
+                const counter = document.getElementById('counter-select').value; // NEW: Get Counter
                 if(!dateFilter) return;
 
                 try {
@@ -790,15 +735,16 @@
                     docs.sort((a, b) => a.queueSequence - b.queueSequence);
                     const nextItem = docs[0];
 
-                    await updateDoc(doc(db, "queues", nextItem.id), { status: 'CALLED', updatedAt: serverTimestamp() });
+                    await updateDoc(doc(db, "queues", nextItem.id), { status: 'CALLED', counter: counter, updatedAt: serverTimestamp() });
 
                     await setDoc(doc(db, "settings", "tv_display"), {
                         currentCalled: nextItem.queueNumber,
                         customerName: nextItem.customerName || 'Walk-in',
+                        counter: counter, // NEW: Save Counter to TV Display DB
                         timestamp: serverTimestamp()
                     }, { merge: true });
 
-                    this.showToast(`Called Ticket ${nextItem.queueNumber} successfully.`, 'success');
+                    this.showToast(`Called Ticket ${nextItem.queueNumber} to Counter ${counter}.`, 'success');
 
                 } catch(e) {
                     this.showAlert("Error calling next: " + e.message, "System Error");
@@ -1004,11 +950,16 @@
                             document.getElementById('tv-serving').innerText = data.currentCalled;
                             document.getElementById('tv-serving-name').innerText = data.customerName || '';
                             
+                            // NEW: Update TV Counter Label
+                            const counterDisplay = data.counter || '1';
+                            document.getElementById('tv-counter-label').innerText = `KAUNTER ${counterDisplay}`;
+                            
                             // Flash effect
                             box.classList.add('scale-110', 'bg-brand-600/20');
                             setTimeout(() => box.classList.remove('scale-110', 'bg-brand-600/20'), 800);
 
-                            this.speak(`Nombor giliran, ${data.currentCalled}, sila ke kaunter.`);
+                            // NEW: Update TTS Audio String to mention counter
+                            this.speak(`Nombor giliran, ${data.currentCalled}, sila ke kaunter, ${counterDisplay}.`);
                         }
                     }
                 });
