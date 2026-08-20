@@ -3,343 +3,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Portal - Barbershop</title>
+    <title>Owner Portal - Premium Barbershop</title>
+    <!-- Import Google Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
-                        darkblue: '#0f172a',
-                        primary: '#1e3a8a',
-                        secondary: '#3b82f6'
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#0f172a', // Dark theme standard
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     }
                 }
             }
         }
     </script>
     <style>
+        body { font-family: 'Inter', sans-serif; }
         .hidden-view { display: none !important; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-out forwards; }
+        
+        /* Glassmorphism for TV */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex h-screen overflow-hidden text-sm">
+<body class="bg-slate-50 flex h-screen overflow-hidden text-sm text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900">
 
-    <!-- Global Custom Modal (Replaces alert) -->
-    <div id="custom-modal" class="hidden-view fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform transition-all scale-100 opacity-100">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Global Custom Modal (Error/Confirmations) -->
+    <div id="custom-modal" class="hidden-view fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform transition-all">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                    <i class="fas fa-info-circle text-blue-600 text-xl" id="modal-icon"></i>
+                <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-brand-50 mb-5">
+                    <i class="fas fa-info-circle text-brand-600 text-2xl" id="modal-icon"></i>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-2" id="modal-title">Notification</h3>
-                <p class="text-sm text-gray-500 mb-6" id="modal-msg"></p>
-                <button onclick="document.getElementById('custom-modal').classList.add('hidden-view')" class="w-full bg-darkblue text-white font-bold py-2.5 px-4 rounded-lg hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                    OK
+                <h3 class="text-xl font-bold text-slate-900 mb-2 tracking-tight" id="modal-title">Notification</h3>
+                <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="modal-msg"></p>
+                <button onclick="document.getElementById('custom-modal').classList.add('hidden-view')" class="w-full bg-brand-950 text-white font-semibold py-3 px-4 rounded-xl hover:bg-brand-800 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-brand-900 shadow-md">
+                    Understood
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- TV Display View (Public, No Login) -->
-    <div id="view-tv" class="hidden-view absolute inset-0 z-50 bg-gradient-to-br from-slate-900 to-black text-white flex flex-col overflow-hidden h-screen w-screen">
+    <!-- Premium TV Display View (Public) -->
+    <div id="view-tv" class="hidden-view absolute inset-0 z-50 bg-[#0a0a0a] text-white flex flex-col overflow-hidden h-screen w-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black">
         
-        <!-- Butang Start untuk Benarkan Bunyi (Browser Policy) -->
-        <div id="tv-start-overlay" class="absolute inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
-            <h2 class="text-3xl text-gray-300 mb-8 font-light">Paparan TV Bersedia</h2>
-            <button onclick="adminApp.startTV()" class="bg-blue-600 text-white text-4xl font-bold py-8 px-16 rounded-3xl shadow-[0_0_40px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:scale-105 transition-all border-4 border-blue-400 cursor-pointer focus:outline-none">
-                <i class="fas fa-play mr-4"></i> MULA PAPARAN TV
-            </button>
-            <p class="text-gray-400 mt-8 max-w-lg text-center text-lg">Klik butang di atas untuk membenarkan sistem web ke mod skrin penuh dan memainkan bunyi loceng/suara.</p>
+        <!-- Start Button Overlay for Audio Policy -->
+        <div id="tv-start-overlay" class="absolute inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col items-center justify-center">
+            <div class="glass-panel p-12 rounded-3xl text-center max-w-2xl border-white/10 shadow-2xl">
+                <div class="w-24 h-24 bg-brand-600/20 rounded-full flex items-center justify-center mx-auto mb-8 border border-brand-500/30">
+                    <i class="fas fa-tv text-4xl text-brand-400"></i>
+                </div>
+                <h2 class="text-4xl text-white mb-4 font-bold tracking-tight">TV Display Ready</h2>
+                <p class="text-slate-400 mb-10 text-lg">Click below to activate fullscreen mode and enable audio announcements for queue calling.</p>
+                <button onclick="adminApp.startTV()" class="bg-brand-600 text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.3)] hover:bg-brand-500 hover:scale-105 transition-all cursor-pointer focus:outline-none ring-4 ring-brand-500/20">
+                    <i class="fas fa-play mr-3"></i> LAUNCH DISPLAY
+                </button>
+            </div>
         </div>
 
         <!-- TV Header -->
-        <header class="w-full p-8 flex justify-between items-center border-b border-gray-800 bg-black/30">
-            <h1 class="text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-white drop-shadow-lg" id="tv-shopname">BARBERSHOP</h1>
-            <div class="text-4xl font-mono text-blue-300 font-bold tracking-wider" id="tv-clock">00:00:00</div>
+        <header class="w-full py-8 px-12 flex justify-between items-center border-b border-white/5 bg-black/20">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-cut text-2xl text-white"></i>
+                </div>
+                <h1 class="text-4xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400" id="tv-shopname">PREMIUM CUTS</h1>
+            </div>
+            <div class="glass-panel px-6 py-3 rounded-2xl text-3xl font-mono text-brand-300 font-medium tracking-wider shadow-inner" id="tv-clock">00:00:00</div>
         </header>
 
         <!-- TV Main Content -->
-        <div class="flex-grow flex w-full">
+        <div class="flex-grow flex w-full p-8 gap-8">
             <!-- Left: Now Serving -->
-            <div class="w-3/5 flex flex-col items-center justify-center p-12 border-r border-gray-800 relative">
-                <div id="tv-serving-box" class="w-full aspect-video bg-gradient-to-b from-blue-900/40 to-transparent border border-blue-500/30 rounded-[3rem] flex flex-col items-center justify-center transition-all duration-500 shadow-[0_0_50px_rgba(30,58,138,0.2)]">
-                    <h2 class="text-4xl font-semibold text-blue-400 uppercase tracking-widest mb-6" id="tv-main-label">Now Serving</h2>
-                    <div class="text-[14rem] leading-none font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] tracking-tighter" id="tv-serving">--</div>
+            <div class="w-3/5 flex flex-col items-center justify-center relative glass-panel rounded-[3rem] overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-brand-900/20 to-transparent"></div>
+                <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-900/20 rounded-full blur-3xl"></div>
+                
+                <div id="tv-serving-box" class="z-10 flex flex-col items-center justify-center transition-all duration-700 p-12 w-full h-full">
+                    <h2 class="text-3xl font-semibold text-brand-400 uppercase tracking-[0.3em] mb-8" id="tv-main-label">Now Serving</h2>
+                    <div class="text-[16rem] leading-none font-black text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.2)] tracking-tighter" id="tv-serving">--</div>
+                    <p id="tv-serving-name" class="mt-8 text-4xl text-slate-400 font-light truncate max-w-xl"></p>
                 </div>
             </div>
             
             <!-- Right: Next in Line -->
-            <div class="w-2/5 flex flex-col bg-black/20">
-                <div class="p-8 border-b border-gray-800 bg-gray-900/50">
-                    <h2 class="text-3xl font-bold text-gray-400 uppercase tracking-wider text-center"><i class="fas fa-list-ul mr-3"></i>Next In Line</h2>
+            <div class="w-2/5 flex flex-col gap-6">
+                <div class="glass-panel rounded-3xl p-8 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                        <i class="fas fa-users text-slate-300"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white uppercase tracking-widest">Next In Line</h2>
                 </div>
-                <div class="flex-grow flex flex-col justify-center p-12 space-y-8">
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-8 flex items-center justify-between shadow-inner">
-                        <span class="text-2xl text-gray-400 font-bold">1st</span>
-                        <span class="text-7xl font-bold text-yellow-400" id="tv-next-1">--</span>
+                
+                <div class="flex-grow flex flex-col gap-6">
+                    <div class="glass-panel rounded-3xl p-8 flex items-center justify-between border-l-4 border-l-brand-500 transition-all hover:bg-white/5">
+                        <span class="text-xl text-slate-400 font-medium tracking-wider uppercase">1st</span>
+                        <span class="text-7xl font-bold text-white drop-shadow-md" id="tv-next-1">--</span>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
-                        <span class="text-xl text-gray-500 font-bold">2nd</span>
-                        <span class="text-5xl font-bold text-gray-300" id="tv-next-2">--</span>
+                    <div class="glass-panel rounded-3xl p-6 flex items-center justify-between opacity-80">
+                        <span class="text-lg text-slate-500 font-medium tracking-wider uppercase">2nd</span>
+                        <span class="text-5xl font-bold text-slate-200" id="tv-next-2">--</span>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
-                        <span class="text-xl text-gray-500 font-bold">3rd</span>
-                        <span class="text-5xl font-bold text-gray-300" id="tv-next-3">--</span>
+                    <div class="glass-panel rounded-3xl p-6 flex items-center justify-between opacity-60">
+                        <span class="text-lg text-slate-500 font-medium tracking-wider uppercase">3rd</span>
+                        <span class="text-4xl font-bold text-slate-300" id="tv-next-3">--</span>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- TV Footer -->
-        <footer class="w-full py-4 bg-blue-700 text-center shadow-lg z-10">
-            <p class="text-2xl font-semibold text-white tracking-wide">Sila bersedia apabila nombor giliran anda dipanggil. Terima kasih!</p>
+        <footer class="w-full py-5 glass-panel border-t border-white/5 text-center shadow-lg z-10 mt-auto">
+            <p class="text-xl font-medium text-slate-300 tracking-wide">Please proceed to the counter when your number is called.</p>
         </footer>
     </div>
 
     <!-- Login View -->
-    <div id="view-login" class="hidden-view absolute inset-0 z-40 bg-gray-100 flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200">
-            <div class="text-center mb-6">
-                <div class="bg-darkblue text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-user-shield text-2xl"></i>
+    <div id="view-login" class="hidden-view absolute inset-0 z-40 bg-slate-100 flex items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        <div class="bg-white p-10 rounded-3xl shadow-soft w-full max-w-md border border-slate-200/60 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-500 to-brand-800"></div>
+            
+            <div class="text-center mb-8 pt-4">
+                <div class="bg-brand-950 text-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand-900/20 transform rotate-3">
+                    <i class="fas fa-store text-3xl transform -rotate-3"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-darkblue">Owner Portal</h2>
-                <p class="text-gray-500 text-sm">Please sign in to continue</p>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">Admin Portal</h2>
+                <p class="text-slate-500 text-sm mt-2">Sign in to manage your barbershop</p>
             </div>
-            <form onsubmit="adminApp.login(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                    <input type="email" id="login-email" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+            
+            <form onsubmit="adminApp.login(event)" class="space-y-5">
+                <div>
+                    <label class="block text-slate-700 text-sm font-semibold mb-2">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-slate-400 text-sm"></i>
+                        </div>
+                        <input type="email" id="login-email" required placeholder="admin@example.com" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-medium text-slate-800">
+                    </div>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" id="login-pass" required class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                <div>
+                    <label class="block text-slate-700 text-sm font-semibold mb-2">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-slate-400 text-sm"></i>
+                        </div>
+                        <input type="password" id="login-pass" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-medium text-slate-800">
+                    </div>
                 </div>
-                <p id="login-error" class="text-red-500 text-xs font-bold mb-4 hidden"></p>
-                <button type="submit" class="w-full bg-darkblue text-white font-bold py-3 px-4 rounded hover:bg-primary transition-colors flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-darkblue">
-                    <span id="login-btn-text">SIGN IN</span>
-                    <i id="login-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                <div id="login-error" class="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 hidden flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i> <span>Invalid credentials.</span>
+                </div>
+                <button type="submit" class="w-full bg-brand-950 text-white font-bold py-4 px-4 rounded-xl hover:bg-brand-800 hover:shadow-lg transition-all flex justify-center items-center focus:outline-none focus:ring-4 focus:ring-brand-900/20 mt-4">
+                    <span id="login-btn-text">Sign In Securely</span>
+                    <i id="login-spinner" class="fas fa-circle-notch fa-spin ml-3 hidden text-brand-300"></i>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="hidden-view w-64 bg-darkblue text-white flex-shrink-0 flex flex-col h-full transition-all duration-300 z-20 shadow-xl relative">
-        <div class="p-6 flex items-center justify-between border-b border-slate-700">
-            <h1 class="text-xl font-black tracking-widest truncate"><i class="fas fa-cut mr-2"></i> ADMIN</h1>
-        </div>
+    <!-- App Container -->
+    <div id="app-container" class="hidden-view flex h-full w-full relative">
         
-        <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4 px-3">Management</p>
-            <a href="#queue" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="queue"><i class="fas fa-users w-6"></i> Live Queue</a>
-            <a href="#bookings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="bookings"><i class="fas fa-calendar-alt w-6"></i> Bookings</a>
-            <a href="#customers" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="customers"><i class="fas fa-address-book w-6"></i> Customers</a>
-            <a href="#settings" class="nav-link block px-4 py-3 rounded-lg hover:bg-primary transition-colors text-gray-300 hover:text-white" data-target="settings"><i class="fas fa-cog w-6"></i> Settings</a>
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20 hidden lg:hidden transition-opacity" onclick="adminApp.toggleSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 bg-brand-950 text-slate-300 flex-shrink-0 flex flex-col h-full transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none border-r border-slate-800">
+            <div class="p-6 flex items-center justify-between border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-brand-600 flex items-center justify-center text-white shadow-md">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                    <h1 class="text-xl font-bold tracking-wider text-white">ADMIN</h1>
+                </div>
+                <button class="lg:hidden text-slate-400 hover:text-white" onclick="adminApp.toggleSidebar()">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
             
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-8 px-3">Displays</p>
-            <a href="#tv" target="_blank" class="block px-4 py-3 rounded-lg hover:bg-slate-800 transition-colors text-gray-400 border border-slate-700"><i class="fas fa-tv w-6"></i> Open TV Display</a>
-        </nav>
+            <nav class="flex-grow py-6 px-4 space-y-1 overflow-y-auto">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 px-4">Overview</p>
+                <a href="#queue" class="nav-link flex items-center px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white group" data-target="queue">
+                    <i class="fas fa-users w-6 text-center text-slate-500 group-hover:text-brand-400 transition-colors"></i> 
+                    <span class="font-medium ml-2">Live Queue</span>
+                </a>
+                <a href="#bookings" class="nav-link flex items-center px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white group" data-target="bookings">
+                    <i class="fas fa-calendar-alt w-6 text-center text-slate-500 group-hover:text-brand-400 transition-colors"></i> 
+                    <span class="font-medium ml-2">Bookings</span>
+                </a>
+                
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-8 px-4">Management</p>
+                <a href="#customers" class="nav-link flex items-center px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white group" data-target="customers">
+                    <i class="fas fa-address-book w-6 text-center text-slate-500 group-hover:text-brand-400 transition-colors"></i> 
+                    <span class="font-medium ml-2">Customers</span>
+                </a>
+                <a href="#settings" class="nav-link flex items-center px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white group" data-target="settings">
+                    <i class="fas fa-cog w-6 text-center text-slate-500 group-hover:text-brand-400 transition-colors"></i> 
+                    <span class="font-medium ml-2">Settings</span>
+                </a>
+                
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 mt-8 px-4">External</p>
+                <a href="#tv" target="_blank" class="flex items-center px-4 py-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition-colors text-slate-300 group">
+                    <i class="fas fa-external-link-alt w-6 text-center text-brand-400"></i> 
+                    <span class="font-medium ml-2">Launch TV Display</span>
+                </a>
+            </nav>
 
-        <div class="p-4 border-t border-slate-700">
-            <div class="flex items-center px-4 py-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center mr-3">
-                    <i class="fas fa-user text-sm"></i>
+            <div class="p-5 border-t border-white/5 bg-black/10">
+                <div class="flex items-center px-3 py-2 mb-4 bg-white/5 rounded-xl border border-white/5">
+                    <div class="w-9 h-9 rounded-full bg-brand-800 flex items-center justify-center mr-3 border border-brand-600">
+                        <i class="fas fa-user-shield text-xs text-white"></i>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-semibold text-white truncate w-32" id="user-email-display">admin@barber</p>
+                        <p class="text-[10px] text-emerald-400 font-medium flex items-center uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span> Online</p>
+                    </div>
                 </div>
-                <div class="text-xs">
-                    <p class="font-bold truncate w-32" id="user-email-display">admin@barber</p>
-                    <p class="text-green-400">Online</p>
+                <button onclick="adminApp.logout()" class="w-full flex items-center justify-center px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors text-sm font-semibold focus:outline-none">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main id="main-content" class="flex-grow flex flex-col h-full bg-slate-50 relative overflow-hidden w-full lg:w-[calc(100%-18rem)]">
+            
+            <!-- Header -->
+            <header class="bg-white border-b border-slate-200 px-4 py-4 lg:px-8 lg:py-5 flex justify-between items-center z-10 shadow-sm shrink-0">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden text-slate-500 hover:text-slate-800 focus:outline-none p-2 rounded-lg hover:bg-slate-100 transition-colors" onclick="adminApp.toggleSidebar()">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-xl lg:text-2xl font-bold text-slate-900 tracking-tight" id="header-title">Dashboard</h2>
+                        <p class="text-xs text-slate-500 font-medium hidden sm:block mt-0.5">Manage your daily operations</p>
+                    </div>
                 </div>
-            </div>
-            <button onclick="adminApp.logout()" class="w-full text-left px-4 py-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-lg transition-colors text-sm font-semibold focus:outline-none">
-                <i class="fas fa-sign-out-alt w-6"></i> Sign Out
-            </button>
-        </div>
-    </aside>
+                <div class="flex items-center bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-inner">
+                    <i class="far fa-clock text-brand-500 mr-2 text-lg"></i>
+                    <span id="sys-clock" class="font-mono font-bold text-slate-700 tracking-wider">--:--</span>
+                </div>
+            </header>
 
-    <!-- Main Content -->
-    <main id="main-content" class="hidden-view flex-grow flex flex-col h-full bg-slate-50 relative overflow-hidden w-full">
-        <!-- Header -->
-        <header class="bg-white border-b border-gray-200 p-4 lg:p-6 flex justify-between items-center z-10 shadow-sm shrink-0">
-            <div class="flex items-center">
-                <h2 class="text-xl lg:text-2xl font-bold text-gray-800" id="header-title">Dashboard</h2>
-            </div>
-            <div class="text-sm font-semibold text-gray-500 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
-                <i class="far fa-clock mr-2"></i><span id="sys-clock">--:--</span>
-            </div>
-        </header>
+            <!-- Dynamic Sections Scrollable Area -->
+            <div class="p-4 lg:p-8 overflow-y-auto flex-grow w-full">
 
-        <!-- Dynamic Sections -->
-        <div class="p-4 lg:p-8 overflow-y-auto flex-grow w-full">
-
-            <!-- Live Queue -->
-            <section id="sec-queue" class="hidden-view">
-                <!-- Action Bar -->
-                <div class="flex flex-col md:flex-row justify-between mb-6 gap-4">
-                    <div class="flex gap-2">
-                        <button onclick="adminApp.callNext()" class="bg-primary text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-darkblue transition-all flex items-center justify-center min-w-[150px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            <i class="fas fa-bullhorn mr-2"></i> CALL NEXT
+                <!-- Live Queue -->
+                <section id="sec-queue" class="hidden-view max-w-7xl mx-auto">
+                    <!-- Action Bar -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 bg-white p-4 lg:p-5 rounded-2xl shadow-soft border border-slate-100">
+                        <button onclick="adminApp.callNext()" class="w-full sm:w-auto bg-brand-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-brand-500/20 active:translate-y-0">
+                            <i class="fas fa-bullhorn mr-3 text-lg"></i> CALL NEXT CUSTOMER
                         </button>
+                        <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
+                            <span class="text-slate-500 font-semibold px-3 text-sm">Date</span>
+                            <input type="date" id="queue-date-filter" class="bg-white border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" onchange="adminApp.loadQueue()">
+                        </div>
                     </div>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-gray-500 font-semibold">Date:</span>
-                        <input type="date" id="queue-date-filter" class="border border-gray-300 rounded-lg px-4 py-2 font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-primary" onchange="adminApp.loadQueue()">
-                    </div>
-                </div>
 
-                <!-- Status Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Waiting</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-waiting">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl"><i class="fas fa-users"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Serving / Called</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-serving">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl"><i class="fas fa-cut"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Completed Today</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-completed">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl"><i class="fas fa-check"></i></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total in System</p>
-                            <h3 class="text-2xl font-black text-gray-800" id="stat-total">0</h3>
-                        </div>
-                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xl"><i class="fas fa-chart-line"></i></div>
-                    </div>
-                </div>
-
-                <!-- Queue Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold">No.</th>
-                                    <th class="p-4 border-b font-bold">Customer</th>
-                                    <th class="p-4 border-b font-bold">Service / Barber</th>
-                                    <th class="p-4 border-b font-bold">Status</th>
-                                    <th class="p-4 border-b font-bold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="queue-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading queue...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Bookings -->
-            <section id="sec-bookings" class="hidden-view">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-700">Manage Appointments</h3>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-gray-500 font-semibold">Filter Date:</span>
-                        <input type="date" id="book-date-filter" class="border border-gray-300 rounded-lg px-4 py-2 font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-primary" onchange="adminApp.loadBookings()">
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold">ID / Time</th>
-                                    <th class="p-4 border-b font-bold">Customer</th>
-                                    <th class="p-4 border-b font-bold">Service / Barber</th>
-                                    <th class="p-4 border-b font-bold">Status</th>
-                                    <th class="p-4 border-b font-bold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookings-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Loading bookings...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Customers -->
-            <section id="sec-customers" class="hidden-view">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                    <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50">
-                        <h3 class="font-bold text-gray-700 text-lg"><i class="fas fa-address-book text-primary mr-2"></i> Customer Directory</h3>
-                        <div class="relative w-full sm:w-auto">
-                            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                            <input type="text" id="cust-search" placeholder="Search name or phone..." class="border border-gray-300 pl-11 pr-4 py-2.5 rounded-lg text-sm w-full sm:w-80 focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all" onkeyup="adminApp.filterCustomers()">
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-full" id="customers-table">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                    <th class="p-4 border-b font-bold w-1/3">Customer Name</th>
-                                    <th class="p-4 border-b font-bold w-1/4">Phone Number</th>
-                                    <th class="p-4 border-b font-bold text-center w-1/6">Total Visits</th>
-                                    <th class="p-4 border-b font-bold w-1/4">Last Visit Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customers-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="4" class="p-8 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Loading records...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings -->
-            <section id="sec-settings" class="hidden-view">
-                <div class="max-w-2xl bg-white p-6 lg:p-8 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-xl font-bold text-gray-800 border-b border-gray-100 pb-4 mb-6"><i class="fas fa-store mr-2 text-primary"></i> General Settings</h3>
-                    <form id="form-settings" onsubmit="adminApp.saveSettings(event)">
-                        <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Shop Name</label>
-                            <input type="text" id="set-shopname" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
-                        </div>
-                        <div class="grid grid-cols-2 gap-6 mb-8">
+                    <!-- Enhanced Status Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                        <!-- Waiting -->
+                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-amber-200 transition-colors relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-amber-100/50 to-transparent rounded-bl-full -z-10"></div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Queue Prefix (e.g. A)</label>
-                                <input type="text" id="set-prefix" required maxlength="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
+                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Waiting</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="stat-waiting">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-hourglass-half"></i></div>
+                        </div>
+                        <!-- Serving -->
+                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-blue-200 transition-colors relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-bl-full -z-10"></div>
+                            <div>
+                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Serving</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="stat-serving">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-cut"></i></div>
+                        </div>
+                        <!-- Completed -->
+                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-emerald-200 transition-colors relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-emerald-100/50 to-transparent rounded-bl-full -z-10"></div>
+                            <div>
+                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Completed</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="stat-completed">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-check-double"></i></div>
+                        </div>
+                        <!-- Total -->
+                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center justify-between group hover:border-purple-200 transition-colors relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-purple-100/50 to-transparent rounded-bl-full -z-10"></div>
+                            <div>
+                                <p class="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-1">Total Today</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="stat-total">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800 text-lg">Active Queue List</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-y border-slate-100">
+                                        <th class="px-6 py-4 font-bold w-24">Ticket</th>
+                                        <th class="px-6 py-4 font-bold">Customer Details</th>
+                                        <th class="px-6 py-4 font-bold">Service / Staff</th>
+                                        <th class="px-6 py-4 font-bold">Status</th>
+                                        <th class="px-6 py-4 font-bold text-right">Manage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="queue-table-body" class="divide-y divide-slate-100 bg-white">
+                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Loading queue data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bookings Section -->
+                <section id="sec-bookings" class="hidden-view max-w-7xl mx-auto">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 bg-white p-4 lg:p-5 rounded-2xl shadow-soft border border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800 tracking-tight">Appointments</h3>
+                        </div>
+                        <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
+                            <span class="text-slate-500 font-semibold px-3 text-sm">Date</span>
+                            <input type="date" id="book-date-filter" class="bg-white border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" onchange="adminApp.loadBookings()">
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
+                                        <th class="px-6 py-4 font-bold">Time / Ref ID</th>
+                                        <th class="px-6 py-4 font-bold">Client Name</th>
+                                        <th class="px-6 py-4 font-bold">Service Req.</th>
+                                        <th class="px-6 py-4 font-bold">Status</th>
+                                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookings-table-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Loading schedules...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Customers Section -->
+                <section id="sec-customers" class="hidden-view max-w-7xl mx-auto">
+                    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 bg-slate-50/50">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
+                                    <i class="fas fa-address-book"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800 tracking-tight">Client Directory</h3>
+                            </div>
+                            <div class="relative w-full sm:w-80 group">
+                                <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 group-focus-within:text-brand-500 transition-colors"></i>
+                                <input type="text" id="cust-search" placeholder="Search client by name or phone..." class="bg-white border border-slate-200 pl-11 pr-4 py-2.5 rounded-xl text-sm w-full focus:ring-2 focus:ring-brand-500 outline-none shadow-sm transition-all" onkeyup="adminApp.filterCustomers()">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-full" id="customers-table">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
+                                        <th class="px-6 py-4 font-bold w-1/3">Client Info</th>
+                                        <th class="px-6 py-4 font-bold w-1/4">Contact</th>
+                                        <th class="px-6 py-4 font-bold text-center w-1/6">Loyalty</th>
+                                        <th class="px-6 py-4 font-bold w-1/4">Last Visit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customers-table-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="4" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Analyzing records...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings -->
+                <section id="sec-settings" class="hidden-view max-w-3xl mx-auto">
+                    <div class="bg-white p-8 rounded-2xl shadow-soft border border-slate-200">
+                        <div class="flex items-center gap-3 mb-8 pb-6 border-b border-slate-100">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
+                                <i class="fas fa-sliders-h"></i>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Avg Duration (mins)</label>
-                                <input type="number" id="set-duration" required min="5" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-gray-50">
+                                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">System Preferences</h3>
+                                <p class="text-sm text-slate-500 mt-1">Configure global settings for your shop operations.</p>
                             </div>
                         </div>
                         
-                        <div class="flex items-center justify-between border-t border-gray-100 pt-6">
-                            <p id="set-msg" class="text-green-600 font-bold hidden"><i class="fas fa-check-circle mr-1"></i> Saved successfully</p>
-                            <button type="submit" id="set-btn" class="bg-primary text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-darkblue transition-colors ml-auto focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                <i class="fas fa-save mr-2"></i> SAVE SETTINGS
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
+                        <form id="form-settings" onsubmit="adminApp.saveSettings(event)" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Display Shop Name</label>
+                                <input type="text" id="set-shopname" required placeholder="e.g. Premium Cuts" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all font-medium">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Queue Ticket Prefix</label>
+                                    <input type="text" id="set-prefix" required maxlength="2" placeholder="e.g. A" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all font-medium uppercase">
+                                    <p class="text-xs text-slate-400 mt-2"><i class="fas fa-info-circle mr-1"></i> Result: A100, A101...</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Avg. Service Duration</label>
+                                    <div class="relative">
+                                        <input type="number" id="set-duration" required min="5" placeholder="30" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:bg-white outline-none transition-all font-medium pr-16">
+                                        <span class="absolute right-4 top-3.5 text-slate-400 font-medium">mins</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-end border-t border-slate-100 pt-8 mt-4 gap-4">
+                                <button type="button" onclick="adminApp.handleRoute()" class="px-6 py-3 font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" id="set-btn" class="bg-brand-950 text-white font-bold py-3 px-8 rounded-xl shadow-md hover:bg-brand-800 transition-all focus:outline-none focus:ring-4 focus:ring-brand-900/20 flex items-center justify-center min-w-[160px]">
+                                    <i class="fas fa-save mr-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
 
-        </div>
-    </main>
+            </div>
+        </main>
+    </div>
 
     <!-- Firebase Logic -->
     <script type="module">
         // ================================
         // FIREBASE CONFIGURATION
-        // Gantikan nilai ini dengan keys dari Firebase Project anda
         // ================================
         const firebaseConfig = {
             apiKey: "AIzaSyBBXZkkgYlQgEvVwNcVeYJpBfcaFNo89j0",
@@ -362,41 +515,75 @@
             unsubQueue: null,
             lastCalledId: null,
 
-            // Utility for custom modal alerts (replacing native alert())
+            // Professional Toast Notification
+            showToast(message, type = "success") {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast-enter flex items-center p-4 w-full max-w-xs text-slate-800 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-slate-100 pointer-events-auto`;
+                
+                let iconHtml = '';
+                if(type === 'success') iconHtml = `<div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-emerald-500 bg-emerald-100 rounded-lg"><i class="fas fa-check"></i></div>`;
+                else if(type === 'error') iconHtml = `<div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-red-500 bg-red-100 rounded-lg"><i class="fas fa-exclamation"></i></div>`;
+                else iconHtml = `<div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-blue-500 bg-blue-100 rounded-lg"><i class="fas fa-info"></i></div>`;
+
+                toast.innerHTML = `
+                    ${iconHtml}
+                    <div class="ml-3 text-sm font-medium pr-4">${message}</div>
+                `;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+
+            // Modal for critical alerts
             showAlert(message, title = "Notification") {
                 document.getElementById('modal-title').innerText = title;
                 document.getElementById('modal-msg').innerText = message;
                 document.getElementById('custom-modal').classList.remove('hidden-view');
             },
 
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobile-overlay');
+                
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            },
+
             init() {
-                // Update system clock
+                // System Clock
                 setInterval(() => {
                     document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }, 1000);
 
-                // Handle routing #hash
                 window.addEventListener('hashchange', () => this.handleRoute());
                 
-                // Check if #tv is accessed directly
                 if (window.location.hash === '#tv') {
                     this.initTV();
-                    return; // Stop login execution
+                    return; 
                 }
 
-                // Auth Listener
+                // Auth state
                 onAuthStateChanged(auth, user => {
                     if (user) {
                         document.getElementById('user-email-display').innerText = user.email;
                         document.getElementById('view-login').classList.add('hidden-view');
-                        document.getElementById('sidebar').classList.remove('hidden-view');
-                        document.getElementById('main-content').classList.remove('hidden-view');
-                        if(!window.location.hash) window.location.hash = '#queue';
+                        document.getElementById('app-container').classList.remove('hidden-view');
+                        if(!window.location.hash || window.location.hash === '#tv') window.location.hash = '#queue';
                         else this.handleRoute();
                     } else {
                         document.getElementById('view-login').classList.remove('hidden-view');
-                        document.getElementById('sidebar').classList.add('hidden-view');
-                        document.getElementById('main-content').classList.add('hidden-view');
+                        document.getElementById('app-container').classList.add('hidden-view');
                     }
                 });
             },
@@ -410,16 +597,15 @@
                 const spinner = document.getElementById('login-spinner');
                 
                 err.classList.add('hidden');
-                btnText.innerText = "SIGNING IN...";
+                btnText.innerText = "Authenticating...";
                 spinner.classList.remove('hidden');
 
                 try {
                     await signInWithEmailAndPassword(auth, em, pw);
                 } catch(error) {
-                    err.innerText = "Invalid credentials. Please try again.";
                     err.classList.remove('hidden');
                 } finally {
-                    btnText.innerText = "SIGN IN";
+                    btnText.innerText = "Sign In Securely";
                     spinner.classList.add('hidden');
                 }
             },
@@ -432,23 +618,42 @@
                 const hash = window.location.hash.substring(1) || 'queue';
                 if (hash === 'tv') return;
 
+                // Close mobile sidebar on navigation
+                if (!document.getElementById('sidebar').classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+                    this.toggleSidebar();
+                }
+
                 document.querySelectorAll('main > div > section').forEach(el => el.classList.add('hidden-view'));
                 
                 const targetSec = document.getElementById(`sec-${hash}`);
                 if(targetSec) targetSec.classList.remove('hidden-view');
 
+                // Update Nav Active State
                 document.querySelectorAll('.nav-link').forEach(el => {
+                    const icon = el.querySelector('i');
                     if(el.dataset.target === hash) {
-                        el.classList.add('bg-primary', 'text-white');
-                        el.classList.remove('text-gray-300');
+                        el.classList.add('bg-brand-600/20', 'text-white', 'border-l-4', 'border-brand-500');
+                        el.classList.remove('text-slate-400', 'hover:bg-white/5');
+                        icon.classList.add('text-brand-400');
+                        icon.classList.remove('text-slate-500');
                     } else {
-                        el.classList.remove('bg-primary', 'text-white');
-                        el.classList.add('text-gray-300');
+                        el.classList.remove('bg-brand-600/20', 'text-white', 'border-l-4', 'border-brand-500');
+                        el.classList.add('text-slate-400', 'hover:bg-white/5');
+                        icon.classList.remove('text-brand-400');
+                        icon.classList.add('text-slate-500');
                     }
                 });
 
-                document.getElementById('header-title').innerText = hash.charAt(0).toUpperCase() + hash.slice(1);
+                // Update Header
+                const titles = {
+                    'queue': 'Live Operations',
+                    'bookings': 'Appointments',
+                    'customers': 'Client Directory',
+                    'settings': 'System Preferences'
+                };
+                document.getElementById('header-title').innerText = titles[hash] || 'Dashboard';
 
+                // Trigger specific data loads
                 if (hash === 'queue') {
                     if(!document.getElementById('queue-date-filter').value) {
                         document.getElementById('queue-date-filter').value = this.getTodayStr();
@@ -485,7 +690,6 @@
                     let html = '';
                     let w=0, s=0, c=0, t=0;
                     
-                    // Sort locally since we don't have compound index setup yet
                     const docs = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     docs.sort((a, b) => a.queueSequence - b.queueSequence);
 
@@ -495,39 +699,64 @@
                         else if(data.status === 'CALLED' || data.status === 'SERVING') s++;
                         else if(data.status === 'COMPLETED') c++;
 
-                        let badge = 'bg-yellow-100 text-yellow-800';
-                        if(data.status === 'CALLED') badge = 'bg-blue-100 text-blue-800 border border-blue-300 shadow-sm';
-                        else if(data.status === 'SERVING') badge = 'bg-green-100 text-green-800';
-                        else if(data.status === 'COMPLETED' || data.status === 'CANCELLED') badge = 'bg-gray-100 text-gray-600';
+                        // Professional Status Badge
+                        let badgeHtml = '';
+                        if(data.status === 'WAITING') {
+                            badgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>WAITING</span>`;
+                        } else if(data.status === 'CALLED') {
+                            badgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm animate-pulse"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>CALLED</span>`;
+                        } else if(data.status === 'SERVING') {
+                            badgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>SERVING</span>`;
+                        } else {
+                            badgeHtml = `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">${data.status}</span>`;
+                        }
 
                         let actions = '';
                         if(data.status === 'WAITING' || data.status === 'CALLED') {
                             actions = `
-                                <button onclick="adminApp.updateQ('${data.id}', 'SERVING')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded shadow-sm mr-1 font-bold transition-colors">SERVE</button>
-                                <button onclick="adminApp.updateQ('${data.id}', 'CANCELLED')" class="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1.5 rounded transition-colors font-bold"><i class="fas fa-times"></i></button>
+                                <div class="flex items-center justify-end gap-2">
+                                    <button onclick="adminApp.updateQ('${data.id}', 'SERVING')" class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg shadow-sm font-semibold transition-all">SERVE</button>
+                                    <button onclick="adminApp.updateQ('${data.id}', 'CANCELLED')" class="text-xs bg-slate-50 text-slate-500 border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 px-2 py-1.5 rounded-lg transition-all" title="Cancel"><i class="fas fa-times"></i></button>
+                                </div>
                             `;
                         } else if (data.status === 'SERVING') {
-                            actions = `<button onclick="adminApp.updateQ('${data.id}', 'COMPLETED')" class="text-xs bg-gray-800 hover:bg-black text-white px-4 py-1.5 rounded shadow-sm font-bold transition-colors">DONE</button>`;
+                            actions = `<button onclick="adminApp.updateQ('${data.id}', 'COMPLETED')" class="text-xs bg-brand-950 hover:bg-brand-800 text-white px-5 py-1.5 rounded-lg shadow-sm font-semibold transition-colors">FINISH</button>`;
                         }
 
+                        // Avatar styling logic
+                        const initial = data.customerName ? data.customerName.charAt(0).toUpperCase() : 'W';
+                        
                         html += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="p-4"><span class="font-black text-lg text-darkblue">${data.queueNumber}</span></td>
-                                <td class="p-4">
-                                    <div class="font-bold text-gray-800">${data.customerName || 'Walk-in'}</div>
-                                    <div class="text-xs text-gray-500 font-mono">${data.phone || '-'}</div>
+                            <tr class="hover:bg-slate-50/50 transition-colors group">
+                                <td class="px-6 py-4">
+                                    <div class="inline-flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl px-3 py-2">
+                                        <span class="font-black text-lg text-slate-800 tracking-wider">${data.queueNumber}</span>
+                                    </div>
                                 </td>
-                                <td class="p-4">
-                                    <div class="text-sm font-semibold">${data.serviceName || 'Basic Haircut'}</div>
-                                    <div class="text-xs text-gray-500">${data.barberName || 'Any Barber'}</div>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-lg border border-brand-200">
+                                            ${initial}
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="font-bold text-slate-900">${data.customerName || 'Walk-in Guest'}</div>
+                                            <div class="text-[11px] text-slate-500 font-mono mt-0.5"><i class="fas fa-phone-alt text-[9px] mr-1"></i> ${data.phone || 'N/A'}</div>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status}</span></td>
-                                <td class="p-4 text-right">${actions}</td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-semibold text-slate-800">${data.serviceName || 'Standard Service'}</div>
+                                    <div class="text-[11px] text-slate-500 flex items-center mt-0.5"><i class="fas fa-user-tag text-[10px] mr-1.5 text-slate-400"></i> ${data.barberName || 'Any Barber'}</div>
+                                </td>
+                                <td class="px-6 py-4">${badgeHtml}</td>
+                                <td class="px-6 py-4 text-right">${actions}</td>
                             </tr>
                         `;
                     });
 
-                    document.getElementById('queue-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No queues for this date.</td></tr>`;
+                    document.getElementById('queue-table-body').innerHTML = html || `<tr><td colspan="5" class="py-16 text-center"><div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4"><i class="fas fa-folder-open text-2xl text-slate-400"></i></div><p class="text-slate-500 font-medium">No queue data for this date.</p></td></tr>`;
+                    
+                    // Animate counters
                     document.getElementById('stat-waiting').innerText = w;
                     document.getElementById('stat-serving').innerText = s;
                     document.getElementById('stat-completed').innerText = c;
@@ -538,8 +767,9 @@
             async updateQ(id, status) {
                 try {
                     await updateDoc(doc(db, "queues", id), { status, updatedAt: serverTimestamp() });
+                    this.showToast(`Ticket status updated to ${status}.`, 'info');
                 } catch (e) {
-                    this.showAlert("Failed to update status. Error: " + e.message);
+                    this.showAlert("Failed to update status. Error: " + e.message, "System Error");
                 }
             },
 
@@ -548,93 +778,92 @@
                 if(!dateFilter) return;
 
                 try {
-                    // Query for waiting queues today
                     const q = query(collection(db, "queues"), where("businessDate", "==", dateFilter), where("status", "==", "WAITING"));
                     const snap = await getDocs(q);
                     
                     if (snap.empty) {
-                        this.showAlert("There are no customers currently waiting in the queue.", "Queue Empty");
+                        this.showToast("Queue is currently empty.", "info");
                         return;
                     }
 
-                    // Sort client-side (no complex index required)
                     const docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
                     docs.sort((a, b) => a.queueSequence - b.queueSequence);
                     const nextItem = docs[0];
 
-                    // 1. Update queue status to CALLED
                     await updateDoc(doc(db, "queues", nextItem.id), { status: 'CALLED', updatedAt: serverTimestamp() });
 
-                    // 2. Sync to TV Display Doc
                     await setDoc(doc(db, "settings", "tv_display"), {
                         currentCalled: nextItem.queueNumber,
-                        customerName: nextItem.customerName || '',
+                        customerName: nextItem.customerName || 'Walk-in',
                         timestamp: serverTimestamp()
                     }, { merge: true });
+
+                    this.showToast(`Called Ticket ${nextItem.queueNumber} successfully.`, 'success');
 
                 } catch(e) {
                     this.showAlert("Error calling next: " + e.message, "System Error");
                 }
             },
 
-            // --- BOOKINGS MANAGEMENT ---
+            // --- BOOKINGS & CUSTOMERS ---
             async loadBookings() {
                 const dateFilter = document.getElementById('book-date-filter').value;
                 if(!dateFilter) return;
                 
-                document.getElementById('bookings-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Fetching bookings...</td></tr>`;
-
                 try {
                     const q = query(collection(db, "bookings"), where("bookingDate", "==", dateFilter));
                     const snap = await getDocs(q);
                     
                     let html = '';
                     const docs = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                    // Sort by time
                     docs.sort((a,b) => (a.bookingTime || '').localeCompare(b.bookingTime || ''));
 
                     docs.forEach(data => {
-                        let badge = 'bg-gray-100 text-gray-800';
-                        if(data.status === 'CONFIRMED') badge = 'bg-green-100 text-green-800';
-                        else if(data.status === 'PENDING') badge = 'bg-yellow-100 text-yellow-800';
-                        else if(data.status === 'CANCELLED') badge = 'bg-red-100 text-red-800';
+                        let badge = 'bg-slate-100 text-slate-600 border-slate-200';
+                        if(data.status === 'CONFIRMED') badge = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                        else if(data.status === 'PENDING') badge = 'bg-amber-50 text-amber-700 border-amber-200';
+                        
+                        const initial = data.customerName ? data.customerName.charAt(0).toUpperCase() : '?';
 
                         html += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="p-4">
-                                    <div class="font-bold text-gray-800">${data.bookingTime || '--:--'}</div>
-                                    <div class="text-xs text-gray-400">#${data.id.substring(0,6)}</div>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="font-bold text-slate-800 text-lg">${data.bookingTime || '--:--'}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono mt-1">#${data.id.substring(0,6).toUpperCase()}</div>
                                 </td>
-                                <td class="p-4">
-                                    <div class="font-bold">${data.customerName || 'Unknown'}</div>
-                                    <div class="text-xs text-gray-500 font-mono">${data.phone || '-'}</div>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm mr-3">
+                                            ${initial}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-800">${data.customerName || 'Unknown'}</div>
+                                            <div class="text-[11px] text-slate-500 font-mono mt-0.5">${data.phone || '-'}</div>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td class="p-4">
-                                    <div class="text-sm font-semibold">${data.serviceName || '-'}</div>
-                                    <div class="text-xs text-gray-500">${data.barberName || '-'}</div>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-semibold text-slate-700">${data.serviceName || '-'}</div>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">by ${data.barberName || '-'}</div>
                                 </td>
-                                <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${data.status || 'PENDING'}</span></td>
-                                <td class="p-4 text-right">
-                                    <button class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded transition-colors font-bold"><i class="fas fa-ellipsis-v"></i></button>
+                                <td class="px-6 py-4">
+                                    <span class="px-3 py-1 rounded-md text-[10px] font-bold border ${badge}">${data.status || 'PENDING'}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-slate-400 hover:text-brand-600 bg-white hover:bg-brand-50 p-2 rounded-lg border border-transparent hover:border-brand-200 transition-all"><i class="fas fa-ellipsis-v w-4"></i></button>
                                 </td>
                             </tr>
                         `;
                     });
 
-                    document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="p-8 text-center text-gray-400">No appointments for this date.</td></tr>`;
+                    document.getElementById('bookings-table-body').innerHTML = html || `<tr><td colspan="5" class="py-12 text-center text-slate-400">No appointments scheduled.</td></tr>`;
                 } catch(e) {
-                    document.getElementById('bookings-table-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Error loading bookings.</td></tr>`;
-                    console.error("Booking Error:", e);
+                    document.getElementById('bookings-table-body').innerHTML = `<tr><td colspan="5" class="py-12 text-center text-red-500">Error loading data.</td></tr>`;
                 }
             },
 
-            // --- CUSTOMERS MANAGEMENT ---
             async loadCustomers() {
-                document.getElementById('customers-table-body').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i> Analyzing historical records...</td></tr>`;
-                
                 try {
-                    // In a production app, you'd query a dedicated 'customers' collection. 
-                    // For this demo, we aggregate from queues to build the directory dynamically.
                     const snap = await getDocs(collection(db, "queues"));
                     const customersMap = {};
 
@@ -651,33 +880,37 @@
                             };
                         }
                         customersMap[phone].totalVisits += 1;
-                        // Determine latest date (string comparison works for ISO YYYY-MM-DD)
                         if(data.businessDate && data.businessDate > customersMap[phone].lastVisitDate) {
                             customersMap[phone].lastVisitDate = data.businessDate;
-                            customersMap[phone].name = data.customerName; // update to latest known name
+                            customersMap[phone].name = data.customerName; 
                         }
                     });
 
                     let html = '';
-                    const custList = Object.values(customersMap).sort((a,b) => b.totalVisits - a.totalVisits); // sort by loyalty
+                    const custList = Object.values(customersMap).sort((a,b) => b.totalVisits - a.totalVisits); 
                     
                     custList.forEach(c => {
+                        const initial = c.name !== 'Unknown' ? c.name.charAt(0).toUpperCase() : 'U';
                         html += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors cust-row">
-                                <td class="p-4 font-bold text-gray-800 cust-name">${c.name}</td>
-                                <td class="p-4 font-mono text-gray-600 cust-phone">${c.phone}</td>
-                                <td class="p-4 text-center">
-                                    <span class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-xs">${c.totalVisits}</span>
+                            <tr class="hover:bg-slate-50/50 transition-colors cust-row border-b border-slate-50 last:border-0">
+                                <td class="px-6 py-4 flex items-center">
+                                    <div class="flex-shrink-0 h-9 w-9 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-slate-600 flex items-center justify-center font-bold text-sm mr-4 shadow-sm border border-slate-300/50">
+                                        ${initial}
+                                    </div>
+                                    <span class="font-bold text-slate-800 cust-name">${c.name}</span>
                                 </td>
-                                <td class="p-4 text-gray-500 text-sm">${c.lastVisitDate}</td>
+                                <td class="px-6 py-4 font-mono text-slate-500 text-sm cust-phone">${c.phone}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center justify-center bg-brand-50 text-brand-700 border border-brand-200 font-bold px-3 py-1 rounded-full text-xs min-w-[2.5rem]">${c.totalVisits}</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-500 text-sm font-medium">${c.lastVisitDate}</td>
                             </tr>
                         `;
                     });
                     
-                    document.getElementById('customers-table-body').innerHTML = html || `<tr><td colspan="4" class="p-8 text-center text-gray-400">No customer records found.</td></tr>`;
+                    document.getElementById('customers-table-body').innerHTML = html || `<tr><td colspan="4" class="py-12 text-center text-slate-400">No client records found.</td></tr>`;
                 } catch(e) {
-                    document.getElementById('customers-table-body').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">Failed to load directory.</td></tr>`;
-                    console.error("Customer Error:", e);
+                    document.getElementById('customers-table-body').innerHTML = `<tr><td colspan="4" class="py-12 text-center text-red-500">Failed to load directory.</td></tr>`;
                 }
             },
 
@@ -713,10 +946,9 @@
             async saveSettings(e) {
                 e.preventDefault();
                 const btn = document.getElementById('set-btn');
-                const msg = document.getElementById('set-msg');
-                const prevHtml = btn.innerHTML;
+                const originalContent = btn.innerHTML;
                 
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> SAVING...`;
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> Saving...`;
                 btn.disabled = true;
 
                 try {
@@ -726,76 +958,61 @@
                         avgDuration: parseInt(document.getElementById('set-duration').value)
                     }, {merge: true});
 
-                    msg.classList.remove('hidden');
-                    setTimeout(() => msg.classList.add('hidden'), 3000);
+                    this.showToast("System preferences saved successfully.", "success");
                 } catch(error) {
-                    this.showAlert("Failed to save settings: " + error.message, "Settings Error");
+                    this.showAlert("Failed to save settings: " + error.message, "Error");
                 } finally {
-                    btn.innerHTML = prevHtml;
+                    btn.innerHTML = originalContent;
                     btn.disabled = false;
                 }
             },
 
             // --- TV DISPLAY LOGIC ---
             startTV() {
-                // Initialize speech synthesis to bypass browser policy constraints
                 const synth = window.speechSynthesis;
-                if(synth) {
-                    const u = new SpeechSynthesisUtterance('');
-                    synth.speak(u);
-                }
+                if(synth) synth.speak(new SpeechSynthesisUtterance('')); // init audio context
                 
                 document.getElementById('tv-start-overlay').classList.add('hidden-view');
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                });
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
             },
 
             initTV() {
                 document.getElementById('view-tv').classList.remove('hidden-view');
                 document.getElementById('view-login').classList.add('hidden-view');
-                document.getElementById('sidebar').classList.add('hidden-view');
-                document.getElementById('main-content').classList.add('hidden-view');
-                document.body.classList.remove('bg-gray-100');
+                document.getElementById('app-container').classList.add('hidden-view');
+                document.body.className = "bg-black overflow-hidden font-sans antialiased selection:bg-brand-500 selection:text-white"; 
+                // Override body classes for TV mode
 
-                // Run clock
                 setInterval(() => {
                     document.getElementById('tv-clock').innerText = new Date().toLocaleTimeString('en-US', {hour12: false});
                 }, 1000);
 
-                // Fetch Shop Name for TV
                 getDoc(doc(db, "settings", "general")).then(docSnap => {
                     if(docSnap.exists() && docSnap.data().shopName) {
                         document.getElementById('tv-shopname').innerText = docSnap.data().shopName.toUpperCase();
                     }
                 });
 
-                // Listen to Called Number updates
                 onSnapshot(doc(db, "settings", "tv_display"), (docSnap) => {
                     if(docSnap.exists()) {
                         const data = docSnap.data();
                         if(data.currentCalled && data.currentCalled !== this.lastCalledId) {
                             this.lastCalledId = data.currentCalled;
                             
-                            // Visual Effects
+                            // Visual Effects for TV
                             const box = document.getElementById('tv-serving-box');
                             document.getElementById('tv-serving').innerText = data.currentCalled;
+                            document.getElementById('tv-serving-name').innerText = data.customerName || '';
                             
-                            box.classList.remove('from-blue-900/40', 'border-blue-500/30');
-                            box.classList.add('from-green-600/60', 'border-green-400');
-                            
-                            setTimeout(() => {
-                                box.classList.remove('from-green-600/60', 'border-green-400');
-                                box.classList.add('from-blue-900/40', 'border-blue-500/30');
-                            }, 2000);
+                            // Flash effect
+                            box.classList.add('scale-110', 'bg-brand-600/20');
+                            setTimeout(() => box.classList.remove('scale-110', 'bg-brand-600/20'), 800);
 
-                            // TTS Announcement
                             this.speak(`Nombor giliran, ${data.currentCalled}, sila ke kaunter.`);
                         }
                     }
                 });
 
-                // Listen to Upcoming Queue updates
                 const q = query(collection(db, "queues"), where("businessDate", "==", this.getTodayStr()), where("status", "==", "WAITING"));
                 onSnapshot(q, (snap) => {
                     const docs = snap.docs.map(d => d.data());
@@ -810,23 +1027,18 @@
             speak(text) {
                 if(!window.speechSynthesis) return;
                 const synth = window.speechSynthesis;
-                // Optional: Cancel previous ongoing speech
-                if(synth.speaking) {
-                    synth.cancel();
-                }
+                if(synth.speaking) synth.cancel();
+                
                 const utterance = new SpeechSynthesisUtterance(text);
-                // Prefer local language
                 utterance.lang = 'ms-MY';
                 utterance.rate = 0.85; 
-                utterance.pitch = 1.1;
+                utterance.pitch = 1.0;
                 synth.speak(utterance);
             }
         };
 
-        // Expose to global window so inline HTML onclick handlers can access it
         window.adminApp = AdminApp;
         
-        // Initialize Application
         document.addEventListener('DOMContentLoaded', () => {
             AdminApp.init();
         });
