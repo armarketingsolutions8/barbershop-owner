@@ -89,6 +89,39 @@
         </div>
     </div>
 
+    <!-- Walk-in Modal (NEW) -->
+    <div id="modal-walkin" class="hidden-view fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-xl font-bold text-slate-900">Tambah Pelanggan (Walk-in)</h3>
+                <button type="button" onclick="document.getElementById('modal-walkin').classList.add('hidden-view')" class="text-slate-400 hover:text-red-500 transition-colors focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="adminApp.addWalkIn(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Pelanggan</label>
+                    <input type="text" id="walkin-name" required placeholder="Contoh: Ali" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">No. Telefon</label>
+                    <input type="tel" id="walkin-phone" placeholder="Contoh: 0123456789" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Servis Diperlukan</label>
+                    <select id="walkin-service" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all font-medium text-slate-700">
+                        <option value="Gunting Biasa">Gunting Rambut Biasa</option>
+                        <option value="Cuci & Gunting">Cuci & Gunting</option>
+                        <option value="Premium Cut">Pakej Premium</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn-submit-walkin" class="w-full mt-4 bg-brand-600 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-brand-700 transition-all focus:ring-4 focus:ring-brand-500/20 shadow-md flex justify-center items-center">
+                    Daftar Masuk Giliran
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Premium TV Display View (Public) -->
     <div id="view-tv" class="hidden-view absolute inset-0 z-50 bg-[#0a0a0a] text-white flex flex-col overflow-hidden h-screen w-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black">
         
@@ -324,9 +357,65 @@
                             <button onclick="adminApp.callNext()" class="w-full sm:w-auto bg-brand-600 text-white px-8 py-3.5 rounded-xl font-bold shadow-md hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-brand-500/20 active:translate-y-0">
                                 <i class="fas fa-bullhorn mr-3 text-lg"></i> CALL NEXT
                             </button>
+                            <!-- NEW: Butang Tambah Walk-in -->
+                            <button onclick="document.getElementById('modal-walkin').classList.remove('hidden-view')" class="w-full sm:w-auto bg-slate-800 text-white px-6 py-3.5 rounded-xl font-bold shadow-md hover:bg-slate-700 transition-all flex items-center justify-center">
+                                <i class="fas fa-user-plus mr-2"></i> Walk-in
+                            </button>
                         </div>
                         <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
-                            <span class="text-slate-500 font-semibold px-3 text-sm">Date</span>
+                            <span class="text-slate-500 font-semibold px-3 text-sm">Tarikh</span>
+                            <!-- FIXED ID to queue-date-filter -->
+                            <input type="date" id="queue-date-filter" class="bg-white border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" onchange="adminApp.loadQueue()">
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Overview -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 flex items-center justify-between">
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Menunggu</p><h4 class="text-2xl font-black text-slate-800" id="stat-waiting">0</h4></div>
+                            <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-hourglass-half text-sm"></i></div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 flex items-center justify-between">
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Sedang Layan</p><h4 class="text-2xl font-black text-slate-800" id="stat-serving">0</h4></div>
+                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-cut text-sm"></i></div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 flex items-center justify-between">
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Selesai</p><h4 class="text-2xl font-black text-slate-800" id="stat-completed">0</h4></div>
+                            <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fas fa-check-circle text-sm"></i></div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-soft border border-slate-100 flex items-center justify-between">
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Jumlah</p><h4 class="text-2xl font-black text-slate-800" id="stat-total">0</h4></div>
+                            <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500"><i class="fas fa-users text-sm"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
+                                        <th class="px-6 py-4 font-bold">No Giliran</th>
+                                        <th class="px-6 py-4 font-bold">Pelanggan</th>
+                                        <th class="px-6 py-4 font-bold">Servis</th>
+                                        <th class="px-6 py-4 font-bold">Status</th>
+                                        <th class="px-6 py-4 font-bold text-right">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <!-- FIXED ID to queue-table-body -->
+                                <tbody id="queue-table-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Memuatkan data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bookings Section (ADDED BACK) -->
+                <section id="sec-bookings" class="hidden-view max-w-7xl mx-auto">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 bg-white p-4 lg:p-5 rounded-2xl shadow-soft border border-slate-100">
+                        <h2 class="text-xl font-bold text-slate-800">Senarai Tempahan (Bookings)</h2>
+                        <div class="flex items-center bg-slate-50 p-2 rounded-xl border border-slate-200 w-full sm:w-auto">
+                            <span class="text-slate-500 font-semibold px-3 text-sm">Tarikh</span>
                             <input type="date" id="book-date-filter" class="bg-white border border-slate-200 rounded-lg px-4 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" onchange="adminApp.loadBookings()">
                         </div>
                     </div>
@@ -336,15 +425,15 @@
                             <table class="w-full text-left border-collapse whitespace-nowrap">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest border-b border-slate-100">
-                                        <th class="px-6 py-4 font-bold">Time / Ref ID</th>
-                                        <th class="px-6 py-4 font-bold">Client Name</th>
-                                        <th class="px-6 py-4 font-bold">Service Req.</th>
+                                        <th class="px-6 py-4 font-bold">Masa / Ref ID</th>
+                                        <th class="px-6 py-4 font-bold">Pelanggan</th>
+                                        <th class="px-6 py-4 font-bold">Servis</th>
                                         <th class="px-6 py-4 font-bold">Status</th>
-                                        <th class="px-6 py-4 font-bold text-right">Actions</th>
+                                        <th class="px-6 py-4 font-bold text-right">Tindakan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="bookings-table-body" class="divide-y divide-slate-100">
-                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Loading schedules...</td></tr>
+                                    <tr><td colspan="5" class="py-12 text-center text-slate-400"><i class="fas fa-circle-notch fa-spin text-2xl mb-3 block"></i> Memuatkan jadual...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -448,7 +537,7 @@
         };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, setDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, getDocs, updateDoc, setDoc, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const appFirebase = initializeApp(firebaseConfig);
@@ -748,6 +837,61 @@
 
                 } catch(e) {
                     this.showAlert("Error calling next: " + e.message, "System Error");
+                }
+            },
+
+            // --- ADD WALK-IN (NEW) ---
+            async addWalkIn(e) {
+                e.preventDefault();
+                const btn = document.getElementById('btn-submit-walkin');
+                const origText = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...`;
+                btn.disabled = true;
+
+                try {
+                    const name = document.getElementById('walkin-name').value;
+                    const phone = document.getElementById('walkin-phone').value || '-';
+                    const service = document.getElementById('walkin-service').value;
+                    const dateFilter = document.getElementById('queue-date-filter').value;
+
+                    // 1. Dapatkan Prefix (Huruf giliran seperti A, B)
+                    const setSnap = await getDoc(doc(db, "settings", "general"));
+                    const prefix = setSnap.exists() && setSnap.data().queuePrefix ? setSnap.data().queuePrefix : 'A';
+
+                    // 2. Semak pangkalan data untuk dapatkan nombor giliran terkini hari ini
+                    const q = query(collection(db, "queues"), where("businessDate", "==", dateFilter));
+                    const snap = await getDocs(q);
+                    let maxSeq = 0;
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if(data.queueSequence && data.queueSequence > maxSeq) {
+                            maxSeq = data.queueSequence;
+                        }
+                    });
+                    
+                    const nextSeq = maxSeq + 1;
+                    const qNum = prefix + nextSeq.toString().padStart(3, '0');
+
+                    // 3. Simpan data giliran baru ke Firebase
+                    await addDoc(collection(db, "queues"), {
+                        businessDate: dateFilter,
+                        customerName: name,
+                        phone: phone,
+                        serviceName: service,
+                        queueNumber: qNum,
+                        queueSequence: nextSeq,
+                        status: 'WAITING',
+                        createdAt: serverTimestamp()
+                    });
+
+                    this.showToast(`Giliran ${qNum} berjaya didaftarkan.`, 'success');
+                    document.getElementById('modal-walkin').classList.add('hidden-view');
+                    e.target.reset(); // Kosongkan form selepas berjaya
+                } catch(err) {
+                    this.showAlert("Gagal menambah giliran: " + err.message, "Ralat Sistem");
+                } finally {
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
                 }
             },
 
